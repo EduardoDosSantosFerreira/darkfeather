@@ -1,38 +1,63 @@
+import tkinter as tk
 import sys
-from PyQt5.QtWidgets import QApplication
-from ui import WiFiProfileViewerUI
-from system import WiFiProfileSystem
+import ctypes
+from ui import setup_ui, create_copy_window
+from system import is_admin, extract_profiles
 
+def main():
+    if not is_admin():
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        sys.exit()
 
-class WiFiProfileController:
-    def __init__(self):
-        self.system = WiFiProfileSystem()
-        self.app = QApplication(sys.argv)
-        self.ui = WiFiProfileViewerUI(self)
+    root = tk.Tk()
+    root.title("DarkFeather - Wireless Connection PRO")
+    root.geometry("1280x600")
+    
+    # Definir ícone mínimo (fallback caso a UI não consiga carregar)
+    try:
+        root.iconbitmap(default='darkfeather.ico')
+    except:
+        pass
 
-    def show_profiles(self):
-        try:
-            profiles = self.system.extract_profiles()
-            if profiles:
-                self.ui.display_profiles(profiles)
-            else:
-                self.ui.status_bar.showMessage(
-                    "Nenhum perfil encontrado ou erro na leitura"
-                )
-        except Exception as e:
-            self.ui.status_bar.showMessage(f"Erro: {str(e)}")
-            print(f"Erro ao buscar perfis: {e}")
+    tree, btn_search, btn_reset = setup_ui(root)
+    profile_data = []
 
-    def get_current_time(self):
-        from datetime import datetime
+    def show_profiles():
+        tree.delete(*tree.get_children())
+        nonlocal profile_data
+        profile_data = extract_profiles()
+        for profile in profile_data:
+            values = [profile[col] for col in tree["columns"]]
+            tree.insert("", "end", values=values)
 
-        return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    def reset_ui():
+        tree.delete(*tree.get_children())
 
-    def run(self):
-        self.ui.show()
-        sys.exit(self.app.exec_())
+    def copy_cell(event):
+        item_id = tree.identify_row(event.y)
+        column = tree.identify_column(event.x)
+        if not item_id or not column:
+            return
+        col_index = int(column[1:]) - 1
+        value = tree.item(item_id, "values")[col_index]
 
+        btn = create_copy_window(root, value)
+        btn.configure(command=lambda: copy_to_clipboard(value, btn.winfo_toplevel()))
+
+    def copy_to_clipboard(value, window):
+        root.clipboard_clear()
+        root.clipboard_append(value)
+        root.update()
+        window.destroy()
+
+    btn_search.config(command=show_profiles)
+    btn_reset.config(command=reset_ui)
+    tree.bind("<Double-1>", copy_cell)
+
+    # Centralizar a janela na tela
+    root.eval('tk::PlaceWindow . center')
+    
+    root.mainloop()
 
 if __name__ == "__main__":
-    controller = WiFiProfileController()
-    controller.run()
+    main()

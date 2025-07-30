@@ -1,87 +1,48 @@
 import subprocess
 import os
+import ctypes
 import xml.etree.ElementTree as ET
 import glob
 import time
 import wmi
-import ctypes
-import sys
-import re
-from datetime import datetime
 
-class WiFiProfileSystem:
-    def __init__(self):
-        self._wmi_conn = None
-        self._last_update = None
-        self.check_admin()
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
 
-    def check_admin(self):
-        if not self.is_admin():
-            ctypes.windll.shell32.ShellExecuteW(
-                None, "runas", sys.executable, " ".join(sys.argv), None, 1
-            )
-            sys.exit()
+def get_adapter_names():
+    adapter_map = {}
+    try:
+        c = wmi.WMI()
+        for adapter in c.Win32_NetworkAdapter():
+            guid = adapter.GUID
+            name = adapter.Name
+            if guid and name:
+                clean_guid = guid.upper().replace("{", "").replace("}", "")
+                adapter_map[clean_guid] = name
+    except Exception as e:
+        print("Erro com WMI:", e)
+    return adapter_map
 
-    def is_admin(self):
-        try:
-            return ctypes.windll.shell32.IsUserAnAdmin()
-        except:
-            return False
-
-    @property
-    def wmi_connection(self):
-        if self._wmi_conn is None:
-            try:
-                self._wmi_conn = wmi.WMI()
-            except Exception as e:
-                print(f"Erro WMI: {e}")
-                return None
-        return self._wmi_conn
-
-    def get_adapter_names(self):
-        adapter_map = {}
-        try:
-            c = self.wmi_connection
-            if c:
-                for adapter in c.Win32_NetworkAdapter():
-                    if adapter.GUID and adapter.Name:
-                        clean_guid = adapter.GUID.upper().replace("{", "").replace("}", "")
-                        adapter_map[clean_guid] = adapter.Name
-        except Exception as e:
-            print(f"Erro adaptadores: {e}")
-        return adapter_map
-
-    def get_ascii_key(self, profile_name):
-        try:
-            result = subprocess.run(
-                ["netsh", "wlan", "show", "profile", profile_name, "key=clear"],
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="ignore",
-                creationflags=subprocess.CREATE_NO_WINDOW,
-                timeout=10
-            )
-            
-            if result.returncode != 0:
-                return ""
-                
-            key_patterns = [
-                r"Conteúdo da Chave\s*:\s*(.+)",
-                r"Key Content\s*:\s*(.+)",
-                r"Contenido de la Clave\s*:\s*(.+)"
-            ]
-            
-            for pattern in key_patterns:
-                match = re.search(pattern, result.stdout)
-                if match:
-                    return match.group(1).strip()
-                    
-        except Exception as e:
-            print(f"Erro netsh: {e}")
+def get_ascii_key(profile):
+    try:
+        output = subprocess.check_output(["netsh", "wlan", "show", "profile", profile, "key=clear"], 
+                                       text=True, encoding="utf-8", errors="ignore")
+        for line in output.splitlines():
+            if "Conteúdo da Chave" in line or "Key Content" in line:
+                return line.split(":")[1].strip()
+    except:
         return ""
+    return ""
 
-    def parse_xml_profile(self, path, adapter_names):
+def extract_profiles():
+    results = []
+    xml_paths = glob.glob(r"C:\ProgramData\Microsoft\Wlansvc\Profiles\Interfaces\*\*.xml")
+    adapter_names = get_adapter_names()
+
+    for path in xml_paths:
         try:
             tree = ET.parse(path)
             root = tree.getroot()
@@ -89,62 +50,31 @@ class WiFiProfileSystem:
 
             ssid = root.find(".//ms:name", ns).text
             key_material = root.find(".//ms:keyMaterial", ns)
-            key_hex = key_material.text.encode("utf-8").hex() if key_material else ""
-            
-            raw_guid = path.split("\\")[-2]
-            adapter_guid = raw_guid.upper().replace("{", "").replace("}", "")
-            adapter_name = adapter_names.get(adapter_guid, "Desconhecido")
+            key_ascii = get_ascii_key(ssid)
+            key_hex = key_material.text.encode("utf-8").hex() if key_material is not None else ""
 
             auth = root.find(".//ms:authentication", ns)
             encrypt = root.find(".//ms:encryption", ns)
             conn_type = root.find(".//ms:connectionType", ns)
 
-            mod_time = os.path.getmtime(path)
-            formatted_time = datetime.fromtimestamp(mod_time).strftime("%d/%m/%Y %H:%M:%S")
+            raw_guid = path.split("\\")[-2]
+            adapter_guid = raw_guid.upper().replace("{", "").replace("}", "")
+            adapter_name = adapter_names.get(adapter_guid, "Desconhecido")
 
-            return {
+            info = {
                 "SSID": ssid,
-                "Senha (ASCII)": self.get_ascii_key(ssid),
+                "Senha (ASCII)": key_ascii,
                 "Senha (HEX)": key_hex,
                 "Adaptador": adapter_name,
                 "GUID Adaptador": raw_guid,
-                "Autenticação": auth.text if auth else "N/A",
-                "Criptografia": encrypt.text if encrypt else "N/A",
-                "Tipo de Conexão": conn_type.text if conn_type else "N/A",
-                "Modificado em": formatted_time,
-                "Caminho do Perfil": path,
-                "_timestamp": mod_time
+                "Autenticação": auth.text if auth is not None else "",
+                "Criptografia": encrypt.text if encrypt is not None else "",
+                "Tipo de Conexão": conn_type.text if conn_type is not None else "",
+                "Modificado em": time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(path))),
+                "Caminho do Perfil": path
             }
-            
+
+            results.append(info)
         except Exception as e:
-            print(f"Erro XML {path}: {e}")
-            return None
-
-    def extract_profiles(self):
-        self._last_update = time.time()
-        results = []
-        adapter_names = self.get_adapter_names()
-        
-        try:
-            xml_paths = glob.glob(
-                r"C:\ProgramData\Microsoft\Wlansvc\Profiles\Interfaces\*\*.xml"
-            )
-            
-            if not xml_paths:
-                print("Nenhum perfil encontrado")
-                return results
-
-            for path in xml_paths:
-                profile_data = self.parse_xml_profile(path, adapter_names)
-                if profile_data:
-                    results.append(profile_data)
-
-            results.sort(key=lambda x: (x["SSID"].lower(), -x["_timestamp"]))
-            
-        except Exception as e:
-            print(f"Erro geral: {e}")
-            
-        return results
-
-    def get_current_time(self):
-        return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            print("Erro ao processar XML:", e)
+    return results

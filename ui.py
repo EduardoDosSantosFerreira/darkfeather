@@ -1,340 +1,176 @@
-from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QPushButton,
-    QLabel,
-    QTableWidget,
-    QTableWidgetItem,
-    QAbstractItemView,
-    QDialog,
-    QLineEdit,
-    QScrollArea,
-    QHeaderView,
-)
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QIcon, QColor
+import tkinter as tk
+from tkinter import ttk
+from tkinter import messagebox
+import os
 
+# Variáveis globais para manter referências dos ícones
+_global_icons = {}
 
-class CopyDialog(QDialog):
-    def __init__(self, value, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Copiar Informação")
-        self.setFixedSize(450, 180)
-        self.setStyleSheet(
-            """
-            QDialog {
-                background-color: #2b2b2b;
-                border: 1px solid #444;
-                border-radius: 5px;
-            }
-            QLabel {
-                color: #e0e0e0;
-                font-size: 14px;
-                padding: 5px;
-            }
-            QLineEdit {
-                background-color: #333;
-                color: #f0f0f0;
-                border: 1px solid #555;
-                border-radius: 3px;
-                padding: 8px;
-                font-size: 14px;
-                selection-background-color: #4a90d9;
-            }
-            QPushButton {
-                background-color: #4CAF50;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                padding: 10px 20px;
-                font-size: 14px;
-                margin: 10px 5px;
-                min-width: 100px;
-            }
-            QPushButton:hover {
-                background-color: #45a049;
-            }
-            QPushButton:pressed {
-                background-color: #3d8b40;
-            }
-        """
-        )
+def _get_native_icon(icon_name, size):
+    """Cria ícones nativos usando caracteres Unicode ou símbolos"""
+    icons = {
+        "logo": "🪶",  # Pena (pode ajustar para outro símbolo)
+        "search": "🛜",
+        "reset": "🔄",
+        "copy": "📚",  # Símbolo de cópia
+    }
+    return icons.get(icon_name, "")
 
-        layout = QVBoxLayout()
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(15)
+def setup_ui(root):
+    # Configurar ícone da janela usando ícone padrão
+    try:
+        root.iconbitmap(default='')  # Isso usará o ícone padrão do Tkinter
+    except:
+        pass  # Se falhar, continuamos sem ícone
 
-        label = QLabel("Clique no botão para copiar:")
-        label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(label)
+    root.configure(bg="#111111")
 
-        self.entry = QLineEdit()
-        self.entry.setText(value)
-        self.entry.setReadOnly(True)
-        layout.addWidget(self.entry)
+    style = ttk.Style(root)
+    style.theme_use("default")
+    style.configure(
+        "Treeview",
+        background="#111111",
+        foreground="white",
+        fieldbackground="#111111",
+        rowheight=28,
+        font=("Segoe UI", 10),
+    )
+    style.map("Treeview", background=[("selected", "#333333")])
+    style.configure(
+        "Treeview.Heading",
+        background="#1a1a1a",
+        foreground="white",
+        font=("Segoe UI", 10, "bold"),
+    )
 
-        btn_layout = QHBoxLayout()
-        btn_layout.addStretch()
+    # Frame de cabeçalho com fundo branco
+    header_frame = tk.Frame(root, bg="#ffffff")
+    header_frame.pack(pady=(15, 5), fill="x")
 
-        self.copy_btn = QPushButton("📋 Copiar para Área de Transferência")
-        self.copy_btn.clicked.connect(self.copy_to_clipboard)
-        btn_layout.addWidget(self.copy_btn)
+    # Logo usando símbolo Unicode
+    logo_symbol = _get_native_icon("logo", 1)
+    logo_label = tk.Label(
+        header_frame, 
+        text=logo_symbol, 
+        bg="#ffffff",
+        font=("Segoe UI", 24)
+    )
+    logo_label.pack(side="left", padx=(20, 10))
 
-        btn_layout.addStretch()
-        layout.addLayout(btn_layout)
+    header = tk.Label(
+        header_frame,
+        text="DarkFeather",
+        font=("Segoe UI", 16, "bold"),
+        fg="black",
+        bg="#ffffff",
+    )
+    header.pack(side="left")
 
-        self.setLayout(layout)
+    btn_frame = tk.Frame(root, bg="#111111")
+    btn_frame.pack(pady=10)
 
-    def copy_to_clipboard(self):
-        clipboard = QApplication.clipboard()
-        clipboard.setText(self.entry.text())
-        self.copy_btn.setText("✔ Copiado!")
-        self.copy_btn.setStyleSheet("background-color: #2E7D32;")
+    # Botão de busca com ícone Unicode
+    search_symbol = _get_native_icon("search", 1)
+    btn_search = tk.Button(
+        btn_frame,
+        text=f" {search_symbol} Buscar e Atualizar",
+        bg="white",
+        fg="black",
+        font=("Segoe UI", 13, "bold"),
+        relief="flat",
+        padx=14,
+        pady=7,
+        cursor="hand2",
+    )
+    btn_search.pack(side="left", padx=10)
 
+    # Botão de reset com ícone Unicode
+    reset_symbol = _get_native_icon("reset", 1)
+    btn_reset = tk.Button(
+        btn_frame,
+        text=f" {reset_symbol} Resetar UI",
+        bg="#ffffff",
+        fg="#000000",
+        font=("Segoe UI", 13, "bold"),
+        relief="flat",
+        padx=14,
+        pady=7,
+        cursor="hand2",
+    )
+    btn_reset.pack(side="left", padx=10)
 
-class WiFiProfileViewerUI(QMainWindow):
-    def __init__(self, controller):
-        super().__init__()
-        self.controller = controller
-        self.profile_data = []
-        self.setup_ui()
+    columns = [
+        "SSID",
+        "Senha (ASCII)",
+        "Senha (HEX)",
+        "Adaptador",
+        "GUID Adaptador",
+        "Autenticação",
+        "Criptografia",
+        "Tipo de Conexão",
+        "Modificado em",
+        "Caminho do Perfil",
+    ]
 
-    def setup_ui(self):
-        self.setWindowTitle("DarkFeather - Wireless Connection PRO")
-        self.setGeometry(100, 100, 1400, 850)
-        self.setup_styles()
+    tree_frame = tk.Frame(root, bg="#111111")
+    tree_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
 
-        # Central Widget
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        main_layout = QVBoxLayout(central_widget)
-        main_layout.setContentsMargins(15, 15, 15, 15)
-        main_layout.setSpacing(15)
+    tree = ttk.Treeview(tree_frame, columns=columns, show="headings")
+    for col in columns:
+        tree.heading(col, text=col)
+        tree.column(col, width=160, anchor="w")
 
-        # Header
-        header = QLabel("🦅 DarkFeather - Visualizador de Perfis Wi-Fi")
-        header.setFont(QFont("Segoe UI", 18, QFont.Bold))
-        header.setAlignment(Qt.AlignCenter)
-        header.setStyleSheet(
-            """
-            color: #fff;
-            margin: 10px 0;
-            padding: 10px;
-            border-bottom: 2px solid #444;
-        """
-        )
-        main_layout.addWidget(header)
+    scrollbar_y = ttk.Scrollbar(tree_frame, orient="vertical", command=tree.yview)
+    scrollbar_x = ttk.Scrollbar(tree_frame, orient="horizontal", command=tree.xview)
 
-        # Buttons
-        btn_frame = QWidget()
-        btn_layout = QHBoxLayout(btn_frame)
-        btn_layout.setContentsMargins(0, 0, 0, 0)
-        btn_layout.setSpacing(10)
+    tree.configure(yscroll=scrollbar_y.set, xscroll=scrollbar_x.set)
+    tree.grid(row=0, column=0, sticky="nsew")
+    scrollbar_y.grid(row=0, column=1, sticky="ns")
+    scrollbar_x.grid(row=1, column=0, sticky="ew")
 
-        self.btn_search = QPushButton("🔍 Buscar e Atualizar")
-        self.btn_search.clicked.connect(self.controller.show_profiles)
-        self.btn_search.setFixedHeight(45)
+    tree_frame.grid_rowconfigure(0, weight=1)
+    tree_frame.grid_columnconfigure(0, weight=1)
 
-        self.btn_reset = QPushButton("🧹 Limpar Tabela")
-        self.btn_reset.clicked.connect(self.reset_ui)
-        self.btn_reset.setFixedHeight(45)
+    return tree, btn_search, btn_reset
 
-        btn_layout.addWidget(self.btn_search)
-        btn_layout.addWidget(self.btn_reset)
-        btn_layout.addStretch()
+def create_copy_window(root, value):
+    top = tk.Toplevel(root)
+    top.title("Copiar Informação")
+    top.configure(bg="#111111")
+    top.geometry("500x120")
+    top.resizable(False, False)
 
-        main_layout.addWidget(btn_frame)
+    # Ícone de cópia Unicode
+    copy_symbol = _get_native_icon("copy", 1)
 
-        # Table
-        self.table = QTableWidget()
-        self.table.setColumnCount(10)
-        self.table.setHorizontalHeaderLabels(
-            [
-                "SSID",
-                "Senha (ASCII)",
-                "Senha (HEX)",
-                "Adaptador",
-                "GUID Adaptador",
-                "Autenticação",
-                "Criptografia",
-                "Tipo de Conexão",
-                "Modificado em",
-                "Caminho do Perfil",
-            ]
-        )
+    label = tk.Label(
+        top, text="Clique para copiar:", font=("Segoe UI", 12), bg="#111111", fg="white"
+    )
+    label.pack(pady=(10, 0))
 
-        # Table configuration
-        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.table.setSortingEnabled(True)
-        self.table.verticalHeader().setVisible(False)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
-        self.table.horizontalHeader().setStretchLastSection(True)
-        self.table.setAlternatingRowColors(True)
+    entry = tk.Entry(
+        top,
+        font=("Segoe UI", 13),
+        fg="black",
+        bg="white",
+        relief="flat",
+        justify="left",
+    )
+    entry.insert(0, value)
+    entry.configure(state="readonly")
+    entry.pack(padx=20, pady=10, fill="x")
 
-        # Enable horizontal scrolling
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setWidget(self.table)
+    btn = tk.Button(
+        top,
+        text=f" {copy_symbol} Copiar",
+        font=("Segoe UI", 12, "bold"),
+        bg="white",
+        fg="black",
+        relief="flat",
+        padx=10,
+        pady=5,
+        cursor="hand2",
+    )
+    btn.pack(pady=(0, 10))
 
-        main_layout.addWidget(scroll_area)
-
-        # Connect double click event
-        self.table.cellDoubleClicked.connect(self.copy_cell)
-
-        # Set button styles
-        self.set_button_style(self.btn_search, "#4CAF50")
-        self.set_button_style(self.btn_reset, "#f44336")
-
-        # Status Bar
-        self.status_bar = self.statusBar()
-        self.status_bar.setStyleSheet(
-            """
-            QStatusBar {
-                color: #aaa;
-                background-color: #333;
-                border-top: 1px solid #444;
-                padding-left: 8px;
-            }
-        """
-        )
-
-    def setup_styles(self):
-        self.setStyleSheet(
-            """
-            QMainWindow {
-                background-color: #2b2b2b;
-            }
-            QTableWidget {
-                background-color: #333;
-                color: #e0e0e0;
-                gridline-color: #444;
-                font-size: 12px;
-                border: 1px solid #444;
-                border-radius: 3px;
-            }
-            QHeaderView::section {
-                background-color: #1a1a1a;
-                color: #e0e0e0;
-                padding: 8px;
-                border: none;
-                font-weight: bold;
-                font-size: 12px;
-            }
-            QTableWidget::item {
-                padding: 8px;
-                border-bottom: 1px solid #444;
-            }
-            QTableWidget::item:selected {
-                background-color: #4a90d9;
-                color: white;
-            }
-            QScrollArea {
-                border: none;
-            }
-            QScrollBar:vertical {
-                background: #333;
-                width: 12px;
-                margin: 0px 0px 0px 0px;
-            }
-            QScrollBar::handle:vertical {
-                background: #555;
-                min-height: 20px;
-                border-radius: 6px;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                height: 0px;
-            }
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-                background: none;
-            }
-        """
-        )
-
-    def set_button_style(self, button, color):
-        button.setStyleSheet(
-            f"""
-            QPushButton {{
-                background-color: {color};
-                color: white;
-                border: none;
-                border-radius: 4px;
-                padding: 10px 20px;
-                font-size: 14px;
-                font-weight: bold;
-                min-width: 150px;
-            }}
-            QPushButton:hover {{
-                background-color: {'#45a049' if color == '#4CAF50' else 
-                                 '#d32f2f' if color == '#f44336' else 
-                                 '#1976D2'};
-            }}
-            QPushButton:pressed {{
-                background-color: {'#3d8b40' if color == '#4CAF50' else 
-                                  '#b71c1c' if color == '#f44336' else 
-                                  '#0D47A1'};
-            }}
-        """
-        )
-
-    def display_profiles(self, profiles):
-        self.table.setRowCount(0)
-        self.profile_data = profiles
-        self.table.setRowCount(len(profiles))
-
-        for row, profile in enumerate(profiles):
-            for col, key in enumerate(
-                [
-                    "SSID",
-                    "Senha (ASCII)",
-                    "Senha (HEX)",
-                    "Adaptador",
-                    "GUID Adaptador",
-                    "Autenticação",
-                    "Criptografia",
-                    "Tipo de Conexão",
-                    "Modificado em",
-                    "Caminho do Perfil",
-                ]
-            ):
-                value = str(profile.get(key, ""))
-
-                # Abrevia o caminho do perfil
-                if key == "Caminho do Perfil" and value:
-                    parts = value.split("\\")
-                    if len(parts) > 4:
-                        value = f"{parts[0]}\\{parts[1]}\\...\\{parts[-2]}\\{parts[-1]}"
-
-                item = QTableWidgetItem(value)
-
-                # Alinhamento e estilo para diferentes colunas
-                if key in ["Senha (ASCII)", "Senha (HEX)"]:
-                    item.setForeground(QColor("#FF9800"))  # Laranja para senhas
-                    item.setFont(QFont("Consolas", 10))
-                elif key == "SSID":
-                    item.setFont(QFont("Segoe UI", 10, QFont.Bold))
-
-                self.table.setItem(row, col, item)
-
-        self.table.resizeColumnsToContents()
-        self.status_bar.showMessage(
-            f"Mostrando {len(profiles)} perfis Wi-Fi | Atualizado em {self.controller.get_current_time()}"
-        )
-
-    def reset_ui(self):
-        self.table.setRowCount(0)
-        self.status_bar.showMessage("Pronto")
-
-    def copy_cell(self, row, column):
-        item = self.table.item(row, column)
-        if item:
-            # Recupera o valor original se for o caminho abreviado
-            if column == 9 and "..." in item.text():  # Coluna "Caminho do Perfil"
-                original_value = self.profile_data[row].get("Caminho do Perfil", "")
-                dialog = CopyDialog(original_value, self)
-            else:
-                dialog = CopyDialog(item.text(), self)
-            dialog.exec_()
+    return btn
