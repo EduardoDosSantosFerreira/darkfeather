@@ -21,125 +21,1076 @@
 
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container">
-      <a class="navbar-brand" href="#">
-        <img src="./src/assets/img/profile_icons/darkfeather.png" id="darkfeatherico" alt="DarkFeather Logo"
-          class="logo-img" style="width:40px;">
-        <span class="ml-2 font-weight-bold">DarkFeather</span>
-      </a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav mx-auto">
-        </ul>
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link btn btn-outline-light" href="dist/darkfeather.exe"><i class="fas fa-download"></i>
-              Download</a>
-          </li>
-        </ul>
-      </div>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-light">
+  <div class="container">
+    <a class="navbar-brand" href="#">
+      <img src="./src/assets/img/profile_icons/darkfeather.png" alt="DarkFeather Logo" class="logo-img mr-2" style="height: 30px;">
+      <span class="brand-text">DarkFeather</span>
+      <span class="badge-version ml-2">PRO</span>
+    </a>
+    
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="#features"><i class="fas fa-wifi mr-1"></i> Recursos</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#how-it-works"><i class="fas fa-cogs mr-1"></i> Como Funciona</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#screenshots"><i class="fas fa-image mr-1"></i> Screenshots</a>
+        </li>
+        <li class="nav-item ml-lg-3 mt-3 mt-lg-0">
+          <a class="btn btn-primary btn-download" href="dist/darkfeather.exe">
+            <i class="fas fa-download mr-2"></i> Download
+          </a>
+        </li>
+      </ul>
     </div>
-  </nav>
+  </div>
+</nav>
 
-  <!-- Header -->
-  <header class="header text-white text-center">
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-8 mx-auto">
-          <h1 class="mt-5 animated-text">
-            <i class="fas fa-feather-alt fa-1x" style="color: #000;"></i> DarkFeather
-          </h1>
-          <p class="lead mb-5">Wireless Connection PRO — Visualize e extraia informações detalhadas das redes Wi-Fi
-            salvas no Windows.</p>
+<style>
+  /* Navbar Styles */
+  .navbar {
+    padding: 15px 0;
+    background-color: #cfd4d8 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    transition: all 0.3s ease;
+  }
+  
+  .navbar.scrolled {
+    padding: 10px 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+  
+  .navbar-brand {
+    display: flex;
+    align-items: center;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .brand-text {
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #111 !important;
+  }
+  
+  .badge-version {
+    background: rgba(13, 110, 253, 0.2);
+    color: #0d6efd;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border: 1px solid rgba(13, 110, 253, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .nav-link {
+    color: #111 !important;
+    font-weight: 500;
+    padding: 8px 15px !important;
+    margin: 0 5px;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  .nav-link:hover {
+    color: #0d6efd !important;
+  }
+  
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 15px;
+    width: 0;
+    height: 2px;
+    background-color: #0d6efd;
+    transition: width 0.3s ease;
+  }
+  
+  .nav-link:hover::after {
+    width: calc(100% - 30px);
+  }
+  
+  .btn-download {
+    background: #0d6efd;
+    color: white;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 8px 20px;
+    border: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-download:hover {
+    background: #111;
+    color: #fff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.1);
+    border: 2px solid #fff;
+  }
+  
+  .btn-download::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+  }
+  
+  .btn-download:hover::before {
+    left: 100%;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 992px) {
+    .navbar-nav {
+      padding-top: 15px;
+    }
+    
+    .nav-item {
+      margin-bottom: 10px;
+    }
+    
+    .nav-link {
+      padding: 10px 0 !important;
+      margin: 0;
+    }
+    
+    .nav-link::after {
+      display: none;
+    }
+    
+    .btn-download {
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>
+
+<script>
+  // Navbar scroll effect
+  $(window).scroll(function() {
+    if($(this).scrollTop() > 50) {
+      $('.navbar').addClass('scrolled');
+    } else {
+      $('.navbar').removeClass('scrolled');
+    }
+  });
+</script>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6 order-lg-1 order-2" data-aos="fade-right">
+        <div class="hero-badge">
+          <span class="badge-version">v2.0</span>
+          <span class="badge-pro">PRO EDITION</span>
         </div>
-        <div class="col-lg-4 text-center">
-          <div class="btn-group">
-            <a href="dist/darkfeather.exe" class="btn btn-lg btn-outline-light mr-2">Baixar DarkFeather</a>
+        <h1 class="hero-title">
+          <img src="./src/assets/img/profile_icons/darkfeather.png" alt="DarkFeather" class="hero-logo">
+          <span>DarkFeather</span>
+        </h1>
+        <p class="hero-subtitle">
+          A ferramenta definitiva para análise profissional de redes Wi-Fi no Windows
+        </p>
+        <div class="hero-buttons">
+          <a href="dist/darkfeather.exe" class="btn btn-download btn-lg mr-3 mb-3">
+            <i class="fas fa-download mr-2"></i>Baixar Agora
+          </a>
+          <a href="#features" class="btn btn-outline-dark btn-lg mb-3">
+            <i class="fas fa-eye mr-2"></i>Ver Demonstração
+          </a>
+        </div>
+        <div class="hero-features">
+          <div class="feature-item">
+            <i class="fas fa-wifi"></i>
+            <span>Visualização Completa</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-key"></i>
+            <span>Informações de Segurança</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-shield-alt"></i>
+            <span>Análise Profissional</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 order-lg-2 order-1" data-aos="fade-left">
+        <div class="hero-interface">
+          <div class="interface-window">
+            <div class="window-header">
+              <div class="window-buttons">
+              </div>
+              <div class="window-title">DarkFeather - WiFi Analysis</div>
+            </div>
+            <div class="window-content">
+              <div class="network-list">
+                <div class="network-item active">
+                  <div class="network-icon">
+                    <i class="fas fa-wifi"></i>
+                  </div>
+                  <div class="network-info">
+                    <div class="network-name">HomeNetwork_5G</div>
+                    <div class="network-details">
+                      <span class="security"><i class="fas fa-lock"></i> WPA2-Personal</span>
+                      <span class="signal"><i class="fas fa-signal"></i> Excelente</span>
+                    </div>
+                  </div>
+                  <div class="network-actions">
+                    <button class="btn-action">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="network-item">
+                  <div class="network-icon">
+                    <i class="fas fa-wifi"></i>
+                  </div>
+                  <div class="network-info">
+                    <div class="network-name">OfficeWiFi</div>
+                    <div class="network-details">
+                      <span class="security"><i class="fas fa-lock"></i> WPA2-Enterprise</span>
+                      <span class="signal"><i class="fas fa-signal"></i> Bom</span>
+                    </div>
+                  </div>
+                  <div class="network-actions">
+                    <button class="btn-action">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="network-item">
+                  <div class="network-icon">
+                    <i class="fas fa-wifi"></i>
+                  </div>
+                  <div class="network-info">
+                    <div class="network-name">CafePublic</div>
+                    <div class="network-details">
+                      <span class="security"><i class="fas fa-unlock"></i> Open</span>
+                      <span class="signal"><i class="fas fa-signal"></i> Fraco</span>
+                    </div>
+                  </div>
+                  <div class="network-actions">
+                    <button class="btn-action">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="network-details-panel">
+                <div class="detail-row">
+                  <span class="detail-label">SSID:</span>
+                  <span class="detail-value">HomeNetwork_5G</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Autenticação:</span>
+                  <span class="detail-value">WPA2-Personal</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Criptografia:</span>
+                  <span class="detail-value">AES-CCMP</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Última conexão:</span>
+                  <span class="detail-value">2023-11-15 14:30</span>
+                </div>
+                <div class="detail-row highlight">
+                  <span class="detail-label">Chave de segurança:</span>
+                  <span class="detail-value">•••••••• [Hex: 7465737465313233]</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </header>
+  </div>
+</section>
 
-  <!-- Sobre -->
-  <section id="about" class="py-5">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-8 mx-auto text-center">
-          <h2 class="section-heading">Sobre o DarkFeather</h2>
-          <p class="text-muted" style="font-size: 1.25rem;">
-            O <strong>DarkFeather</strong> é uma ferramenta gráfica desenvolvida em Python com Tkinter para visualizar e
-            extrair informações detalhadas das redes Wi-Fi salvas no sistema Windows. Ideal para técnicos, profissionais
-            de suporte ou curiosos sobre redes já conectadas.
+<style>
+  .hero {
+    position: relative;
+    padding: 150px 0 100px;
+    background-color: #f8f9fa;
+    color: #212529;
+    overflow: hidden;
+  }
+
+  .hero-badge {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+  }
+
+  .badge-version {
+    background: rgba(0, 0, 0, 0.1);
+    color: #495057;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .badge-pro {
+    background: rgba(13, 110, 253, 0.1);
+    color: #0d6efd;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid rgba(13, 110, 253, 0.2);
+  }
+
+  .hero-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+  }
+
+  .hero-title span {
+    margin-left: 15px;
+  }
+
+  .hero-logo {
+    height: 50px;
+    width: auto;
+  }
+
+  .hero-subtitle {
+    font-size: 1.25rem;
+    color: #495057;
+    margin-bottom: 40px;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+
+  .btn-download {
+    background: #212529;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 12px 28px;
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .btn-download:hover {
+    background: #343a40;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-outline-dark {
+    background: transparent;
+    color: #212529;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 12px 28px;
+    border: 2px solid #212529;
+    transition: all 0.3s ease;
+  }
+
+  .btn-outline-dark:hover {
+    background: #212529;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .hero-interface {
+    position: relative;
+    margin-left: 30px;
+  }
+
+  .interface-window {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+
+  .window-header {
+    background: #f8f9fa;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .window-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .window-btn {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: block;
+  }
+
+  .window-title {
+    margin-left: 15px;
+    font-size: 0.9rem;
+    color: #495057;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .window-content {
+    padding: 20px;
+  }
+
+  .network-list {
+    margin-bottom: 20px;
+  }
+
+  .network-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .network-item:hover {
+    background: rgba(13, 110, 253, 0.05);
+    border-color: rgba(13, 110, 253, 0.1);
+  }
+
+  .network-item.active {
+    background: rgba(13, 110, 253, 0.1);
+    border-color: rgba(13, 110, 253, 0.2);
+  }
+
+  .network-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    color: #495057;
+  }
+
+  .network-info {
+    flex: 1;
+  }
+
+  .network-name {
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+
+  .network-details {
+    display: flex;
+    gap: 15px;
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+
+  .network-details i {
+    margin-right: 5px;
+  }
+
+  .network-actions .btn-action {
+    background: transparent;
+    border: none;
+    color: #495057;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+
+  .network-actions .btn-action:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #0d6efd;
+  }
+
+  .network-details-panel {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    font-size: 0.9rem;
+  }
+
+  .detail-row {
+    display: flex;
+    margin-bottom: 10px;
+  }
+
+  .detail-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .detail-label {
+    font-weight: 600;
+    width: 120px;
+    color: #495057;
+  }
+
+  .detail-value {
+    flex: 1;
+    color: #212529;
+  }
+
+  .detail-row.highlight .detail-value {
+    color: #0d6efd;
+    font-weight: 500;
+  }
+
+  .hero-features {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.03);
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    font-size: 0.85rem;
+  }
+
+  .feature-item i {
+    margin-right: 8px;
+    color: #0d6efd;
+  }
+
+  @media (max-width: 992px) {
+    .hero-title {
+      font-size: 2.5rem;
+    }
+    
+    .hero-interface {
+      margin-left: 0;
+      margin-bottom: 50px;
+    }
+    
+    .hero-features {
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      padding: 120px 0 80px;
+    }
+    
+    .hero-title {
+      font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+      font-size: 1.1rem;
+    }
+    
+    .hero-logo {
+      height: 40px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .hero-title {
+      font-size: 1.8rem;
+    }
+    
+    .hero-buttons .btn {
+      display: block;
+      width: 100%;
+      margin-right: 0 !important;
+      margin-bottom: 15px;
+    }
+    
+    .hero-features {
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .network-details {
+      flex-direction: column;
+      gap: 5px;
+    }
+  }
+</style>
+
+ <!-- Features Section -->
+<section id="features" class="py-5 bg-light">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 text-center">
+        <h2 class="section-title mb-5">Recursos Avançados</h2>
+        <p class="lead text-muted mb-5">
+          O DarkFeather oferece um conjunto completo de ferramentas para análise profissional de redes Wi-Fi no ambiente Windows.
+        </p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-wifi"></i>
+          </div>
+          <h3 class="feature-title">Detecção Completa</h3>
+          <p class="feature-text">
+            Liste todas as redes Wi-Fi armazenadas no sistema com detalhes como SSID, tipo de autenticação e força do signal.
+          </p>
+          <ul class="feature-list">
+            <li>Visualização organizada por data de conexão</li>
+            <li>Filtros por tipo de segurança</li>
+            <li>Indicador de qualidade de conexão</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-key"></i>
+          </div>
+          <h3 class="feature-title">Gerenciamento de Credenciais</h3>
+          <p class="feature-text">
+            Recupere e gerencie informações de segurança das redes, incluindo senhas em formatos ASCII e hexadecimal.
+          </p>
+          <ul class="feature-list">
+            <li>Visualização segura de senhas</li>
+            <li>Opção de copiar para área de transferência</li>
+            <li>Exportação criptografada</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h3 class="feature-title">Análise de Segurança</h3>
+          <p class="feature-text">
+            Identifique redes vulneráveis e configure alertas para conexões inseguras ou com protocolos obsoletos.
+          </p>
+          <ul class="feature-list">
+            <li>Detecção de WEP/WPA vulneráveis</li>
+            <li>Alertas para redes abertas</li>
+            <li>Relatório de segurança detalhado</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section id="how-it-works" class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 text-center">
+        <h2 class="section-title mb-5" style="color: white;">Como Funciona</h2>
+        <p class="lead text-muted mb-5">
+          DarkFeather utiliza APIs nativas do Windows para acessar informações de rede de forma segura e eficiente.
+        </p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6 mb-4">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3 class="step-title">Scan Automático</h3>
+          <p class="step-text">
+            Ao iniciar, o DarkFeather automaticamente varre o sistema em busca de todos os perfis Wi-Fi armazenados, incluindo redes esquecidas ou raramente usadas.
           </p>
         </div>
       </div>
-      <div class="row mt-4 justify-content-center">
-        <div class="col-md-4 text-center">
-          <div class="feature-item">
-            <i class="fas fa-wifi feature-icon fa-2x text-info"></i>
-            <h3 class="feature-title mt-2">Visualização de Redes</h3>
-            <p class="text-muted">Veja todas as redes Wi-Fi salvas no Windows, com detalhes completos.</p>
-          </div>
+      <div class="col-lg-6 mb-4">
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3 class="step-title">Processamento Seguro</h3>
+          <p class="step-text">
+            As credenciais são descriptografadas usando as APIs oficiais do Windows, garantindo que o processo seja realizado de forma segura e autorizada.
+          </p>
         </div>
-        <div class="col-md-4 text-center">
-          <div class="feature-item">
-            <i class="fas fa-key feature-icon fa-2x text-warning"></i>
-            <h3 class="feature-title mt-2">Extração de Senhas</h3>
-            <p class="text-muted">Recupere a senha (ASCII e HEX), autenticação, criptografia e tipo de conexão.</p>
-          </div>
+      </div>
+      <div class="col-lg-6 mb-4">
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3 class="step-title">Organização Inteligente</h3>
+          <p class="step-text">
+            Os resultados são organizados por data de uso, tipo de segurança e qualidade de sinal, facilitando a análise.
+          </p>
         </div>
-        <div class="col-md-4 text-center">
-          <div class="feature-item">
-            <i class="fas fa-moon feature-icon fa-2x text-secondary"></i>
-            <h3 class="feature-title mt-2">Interface Moderna</h3>
-            <p class="text-muted">Interface gráfica escura, intuitiva e com botões de cópia rápida.</p>
-          </div>
+      </div>
+      <div class="col-lg-6 mb-4">
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <h3 class="step-title">Exportação Flexível</h3>
+          <p class="step-text">
+            Os dados podem ser exportados em vários formatos (TXT, CSV, JSON) ou copiados diretamente para a área de transferência.
+          </p>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Rodapé -->
-  <footer class="py-5">
-    <div class="container text-center">
-      <div class="row justify-content-center align-items-center">
-        <div class="col-md-12">
-          <img src="./src/assets/img/profile_icons/darkfeather.png" id="footer-icon" alt="DarkFeather"
-            class="footer-logo">
-          <hr class="bg-white">
-        </div>
-        <div class="col-md-12">
-          <a href="https://www.linkedin.com/in/eduardodossantosferreira/"><img src="./src/assets/img/icons/in.png"
-              alt="Linkedin" title="Linkedin" id="ico-ftr"></a>
-          <a href="https://discordapp.com/users/eduardo_dsf"><img src="./src/assets/img/icons/dc.png" alt="Discord"
-              title="Discord" id="ico-ftr"></a>
-          <a href="mailto:eduardosferreira69@gmail.com"><img src="./src/assets/img/icons/gmail.png" alt="Gmail"
-              title="Gmail" id="ico-ftr"></a>
-          <a href="https://github.com/EduardoDosSantosFerreira"><img src="./src/assets/img/icons/github.png"
-              alt="Github" title="Github" id="ico-ftr"></a>
+<!-- CTA Section -->
+<section id="download" class="py-5 bg-dark text-white">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 text-center">
+        <h2 class="section-title mb-4" style="color: white;">Pronto para dominar suas conexões Wi-Fi?</h2>
+        <p class="lead mb-5">
+          Baixe agora o DarkFeather e tenha controle total sobre todas as redes armazenadas no seu Windows.
+        </p>
+        <a href="dist/darkfeather.exe" class="btn btn-lg mr-3" style="background: #fff; color: #111; border: 1px solid #fff;">
+          <i class="fas fa-download mr-2"></i>Download Gratuito
+        </a>
+        <a href="#features" class="btn btn-outline-light btn-lg">
+          <i class="fas fa-info-circle mr-2"></i>Saiba Mais
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="py-5 bg-black text-white">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4 mb-4">
+        <img src="./src/assets/img/profile_icons/darkfeather.png" alt="DarkFeather" class="footer-logo mb-3">
+        <p>
+          DarkFeather é uma ferramenta profissional para análise e gerenciamento de redes Wi-Fi no ambiente Windows.
+        </p>
+        <div class="social-icons mt-4">
+          <a href="https://github.com/EduardoDosSantosFerreira" class="social-icon"><i class="fab fa-github"></i></a>
+          <a href="https://www.linkedin.com/in/eduardodossantosferreira/" class="social-icon"><i class="fab fa-linkedin"></i></a>
+          <a href="https://discordapp.com/users/eduardo_dsf" class="social-icon"><i class="fab fa-discord"></i></a>
+          <a href="mailto:eduardosferreira69@gmail.com" class="social-icon"><i class="fas fa-envelope"></i></a>
         </div>
       </div>
-      <br>
-      <p>&copy; 2025 Eduardo S Ferreira. | DarkFeather - Wireless Connection PRO</p>
+      <div class="col-lg-2 col-md-6 mb-4">
+        <h5 class="footer-heading">Links</h5>
+        <ul class="footer-links">
+          <li><a href="#features">Recursos</a></li>
+          <li><a href="#how-it-works">Como Funciona</a></li>
+          <li><a href="#screenshots">Screenshots</a></li>
+          <li><a href="#download">Download</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <h5 class="footer-heading">Legal</h5>
+        <ul class="footer-links">
+          <li><a href="#">Termos de Uso</a></li>
+          <li><a href="#">Política de Privacidade</a></li>
+          <li><a href="#">Licença</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-3 mb-4">
+        <h5 class="footer-heading">Contato</h5>
+        <ul class="footer-links">
+          <li style="display: flex; align-items: center;">
+            <i class="fas fa-envelope mr-2"></i>
+            <span>eduardosferreira69@gmail.com</span>
+          </li>
+          <li><i class="fab fa-github mr-2"></i> EduardoDosSantosFerreira</li>
+          <li><i class="fab fa-discord mr-2"></i> eduardo_dsf</li>
+        </ul>
+      </div>
     </div>
-  </footer>
+    <hr class="bg-secondary">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <p class="mb-0">&copy; 2025 Eduardo S Ferreira. Todos os direitos reservados. | DarkFeather - Wireless Connection PRO</p>
+      </div>
+    </div>
+  </div>
+</footer>
 
-  <!-- Bootstrap JS, Popper.js, jQuery -->
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-    crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
-    integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
-    crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"
-    integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s"
-    crossorigin="anonymous"></script>
-</body>
-
-</html>
+<style>
+  /* Global Styles */
+  .section-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #212529;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background-color: #0d6efd;
+  }
+  
+  .bg-light {
+    background-color: #f8f9fa !important;
+  }
+  
+  .bg-dark {
+    background-color: #212529 !important;
+  }
+  
+  .bg-black {
+    background-color: #000 !important;
+  }
+  
+  /* Features Section */
+  .feature-card {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    height: 100%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-color: rgba(13, 110, 253, 0.2);
+  }
+  
+  .feature-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(13, 110, 253, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #0d6efd;
+    margin-bottom: 20px;
+  }
+  
+  .feature-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #212529;
+  }
+  
+  .feature-text {
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+  
+  .feature-list {
+    list-style: none;
+    padding-left: 0;
+  }
+  
+  .feature-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    color: #6c757d;
+    position: relative;
+    padding-left: 25px;
+  }
+  
+  .feature-list li::before {
+    content: '\f00c';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    color: #0d6efd;
+    position: absolute;
+    left: 0;
+  }
+  
+  /* How It Works Section */
+  .step-card {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    height: 100%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+    padding-left: 90px;
+  }
+  
+  .step-number {
+    position: absolute;
+    left: 30px;
+    top: 30px;
+    width: 40px;
+    height: 40px;
+    background: #0d6efd;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+  
+  .step-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #212529;
+  }
+  
+  .step-text {
+    color: #6c757d;
+  }
+  
+  /* Screenshots Section */
+  .screenshot-card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+  }
+  
+  .screenshot-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .screenshot-caption {
+    padding: 15px;
+    text-align: center;
+    font-weight: 500;
+    color: #212529;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  /* CTA Section */
+  .section-title.text-white::after {
+    background-color: #fff;
+  }
+  
+  /* Footer */
+  .footer-logo {
+    height: 50px;
+    width: auto;
+    margin-bottom: 20px;
+  }
+  
+  .footer-heading {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #fff;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .footer-heading::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background-color: #0d6efd;
+  }
+  
+  .footer-links {
+    list-style: none;
+    padding-left: 0;
+  }
+  
+  .footer-links li {
+    margin-bottom: 10px;
+  }
+  
+  .footer-links a {
+    color: #adb5bd;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  
+  .footer-links a:hover {
+    color: #0d6efd;
+    padding-left: 5px;
+  }
+  
+  .social-icons {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .social-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #adb5bd;
+    transition: all 0.3s ease;
+  }
+  
+  .social-icon:hover {
+    background: #0d6efd;
+    color: white;
+    transform: translateY(-3px);
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .section-title {
+      font-size: 2rem;
+    }
+    
+    .step-card {
+      padding-left: 30px;
+      padding-top: 70px;
+    }
+    
+    .step-number {
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+</style>

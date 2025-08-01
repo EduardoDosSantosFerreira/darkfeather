@@ -53,32 +53,6 @@ body {
 
 /* Fim do HERO/HEADER */
 
-.navbar {
-  background-color: #23272b !important;
-  font-family: 'Poppins', sans-serif;
-  padding: 15px 0;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-}
-
-.navbar .navbar-brand {
-  color: #fff;
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.navbar .navbar-nav .nav-link {
-  color: #f5f5f5;
-  font-size: 1.3rem;
-  padding: 10px 15px;
-  transition: color 0.3s ease, background-color 0.3s ease;
-}
-
-.navbar .navbar-nav .nav-link:hover {
-  color: #222222;
-  background-color: #e0e0e0;
-  border-radius: 5px;
-}
-
 .section-heading {
   color: #888888;
   text-align: center;
@@ -101,6 +75,7 @@ body {
 .feature-item:hover {
   transform: translateY(-5px);
   background-color: #232323;
+  color: white;
 }
 
 .feature-icon {
@@ -162,10 +137,7 @@ body {
   75% { color: #bdbdbd; }
 }
 
-footer {
-  background-color: #494949 !important;
-}
-
 .footer-logo {
   width: 50px;
+  background-color: white;
 }
