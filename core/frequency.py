@@ -18,6 +18,7 @@ class FrequencyInfo:
     band: Optional[str] = None  # "2.4 GHz", "5 GHz", "6 GHz"
     bssid: Optional[str] = None
     signal_percent: Optional[int] = None
+    channel_width: Optional[int] = None  # Largura do canal em MHz
     
     @property
     def band_color(self) -> str:
@@ -65,6 +66,13 @@ class FrequencyDetector:
         221: 7055, 225: 7075, 229: 7095, 233: 7115
     }
     
+    # Largura de canal por banda
+    CHANNEL_WIDTH = {
+        "2.4 GHz": 20,
+        "5 GHz": [20, 40, 80, 160],
+        "6 GHz": [20, 40, 80, 160, 320]
+    }
+    
     @classmethod
     def get_band_from_channel(cls, channel: int) -> str:
         """Determina a banda baseada no canal"""
@@ -74,7 +82,7 @@ class FrequencyDetector:
             return "5 GHz"
         elif channel >= 1 and channel <= 233 and channel not in range(1, 15) and channel not in range(36, 166):
             return "6 GHz"
-        return "2.4 GHz"  # fallback
+        return "2.4 GHz"
     
     @classmethod
     def run_netsh_bssid(cls) -> str:
@@ -95,7 +103,6 @@ class FrequencyDetector:
                 return result.stdout
             return ""
         except Exception as e:
-            print(f"Erro ao executar netsh bssid: {e}")
             return ""
     
     @classmethod
@@ -135,6 +142,7 @@ class FrequencyDetector:
                     i += 1
                     channel = None
                     signal = None
+                    channel_width = None
                     
                     # Procura canal nas próximas linhas
                     while i < len(lines) and "BSSID" not in lines[i]:
@@ -150,6 +158,12 @@ class FrequencyDetector:
                             if signal_match:
                                 signal = int(signal_match.group(1))
                         
+                        # Tentar detectar largura de canal
+                        if "Largura" in current_line or "Width" in current_line:
+                            width_match = re.search(r':\s*(\d+)', current_line)
+                            if width_match:
+                                channel_width = int(width_match.group(1))
+                        
                         i += 1
                     
                     # Se encontrou canal, adiciona frequência
@@ -163,7 +177,8 @@ class FrequencyDetector:
                             channel=channel,
                             band=band,
                             bssid=bssid,
-                            signal_percent=signal
+                            signal_percent=signal,
+                            channel_width=channel_width
                         )
                         
                         if current_ssid not in frequencies:
