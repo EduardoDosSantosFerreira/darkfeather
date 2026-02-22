@@ -7,11 +7,12 @@ from PySide6.QtWidgets import (
     QApplication, QSizePolicy, QToolButton
 )
 from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, Signal, QTimer
-from PySide6.QtGui import QFont, QColor, QPainter, QPen
+from PySide6.QtGui import QFont, QColor, QPainter, QPen, QPixmap
 import qtawesome as qta
 
-from core.scanner import WifiNetwork  # Importar do local correto
-from utils.helpers import get_signal_color, format_signal_quality  # Apenas os que existem
+from core.scanner import WifiNetwork
+from core.frequency import FrequencyInfo
+from utils.helpers import get_signal_color, format_signal_quality
 
 
 class LoadingSpinner(QWidget):
@@ -21,7 +22,7 @@ class LoadingSpinner(QWidget):
         super().__init__(parent)
         self.angle = 0
         self.timer = None
-        self.setFixedSize(24, 24)
+        self.setFixedSize(20, 20)
     
     def start_animation(self):
         """Inicia a animação do spinner"""
@@ -56,8 +57,63 @@ class LoadingSpinner(QWidget):
         for i in range(8):
             opacity = 0.2 + (i / 8) * 0.8
             painter.setOpacity(opacity)
-            painter.drawLine(0, 0, 8, 0)
+            painter.drawLine(0, 0, 6, 0)
             painter.rotate(45)
+
+
+class FrequencyBadge(QLabel):
+    """Badge para exibir frequência real da rede"""
+    
+    COLORS = {
+        "2.4 GHz": {"bg": "#3b82f620", "text": "#3b82f6", "icon": "📡"},
+        "5 GHz": {"bg": "#8b5cf620", "text": "#8b5cf6", "icon": "🚀"},
+        "6 GHz": {"bg": "#ec489920", "text": "#ec4899", "icon": "⚡"}
+    }
+    
+    def __init__(self, frequency_info: FrequencyInfo, parent=None):
+        super().__init__(parent)
+        self.frequency_info = frequency_info
+        self.setup_ui()
+    
+    def setup_ui(self):
+        """Configura a aparência do badge"""
+        band = self.frequency_info.band or "2.4 GHz"
+        color = self.COLORS.get(band, self.COLORS["2.4 GHz"])
+        
+        # Texto do badge
+        if self.frequency_info.channel:
+            text = f"{color['icon']} {band} (Ch {self.frequency_info.channel})"
+        else:
+            text = f"{color['icon']} {band}"
+        
+        self.setText(text)
+        
+        # Estilo
+        self.setStyleSheet(f"""
+            QLabel {{
+                background-color: {color['bg']};
+                color: {color['text']};
+                border-radius: 4px;
+                padding: 2px 8px;
+                font-size: 10px;
+                font-weight: 600;
+                max-height: 18px;
+            }}
+        """)
+        
+        # Tooltip com informações detalhadas
+        tooltip = []
+        tooltip.append(f"<b>Frequência:</b> {self.frequency_info.band}")
+        if self.frequency_info.channel:
+            tooltip.append(f"<b>Canal:</b> {self.frequency_info.channel}")
+        if self.frequency_info.frequency_mhz:
+            tooltip.append(f"<b>Frequência:</b> {self.frequency_info.frequency_mhz} MHz")
+        if self.frequency_info.bssid:
+            tooltip.append(f"<b>BSSID:</b> {self.frequency_info.bssid}")
+        if self.frequency_info.signal_percent:
+            tooltip.append(f"<b>Sinal:</b> {self.frequency_info.signal_percent}%")
+        
+        self.setToolTip("<br>".join(tooltip))
 
 
 class WifiCardWidget(QFrame):
@@ -65,69 +121,115 @@ class WifiCardWidget(QFrame):
     Card individual para exibição de uma rede WiFi
     """
     
-    clicked = Signal(object)  # Emite a rede quando clicado
-    copy_requested = Signal(str)  # Emite a senha quando cópia solicitada
-    eye_clicked = Signal()  # Sinal para quando o olho é clicado
+    clicked = Signal(object)
+    copy_requested = Signal(str)
+    eye_clicked = Signal()
     
     def __init__(self, network: WifiNetwork, is_selected: bool = False):
         super().__init__()
         self.network = network
         self.is_selected = is_selected
-        self.animation = None
         self.setup_ui()
-        self.setup_animations()
         self.setup_shadow()
         self.update_style()
-        
+    
     def setup_ui(self):
         """Configura a interface do card"""
-        self.setFixedHeight(90)
+        self.setFixedHeight(110)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         
         # Layout principal
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(20, 16, 20, 16)
-        layout.setSpacing(16)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setSpacing(8)
         
-        # Ícone WiFi com qualidade
+        # Linha superior
+        top_row = QHBoxLayout()
+        top_row.setSpacing(8)
+        
+        # Ícone WiFi
         self.wifi_icon = QLabel()
         quality_color = get_signal_color(self.network.signal_quality)
-        self.wifi_icon.setPixmap(
-            qta.icon('fa5s.wifi', color=quality_color).pixmap(32, 32)
-        )
-        layout.addWidget(self.wifi_icon)
-        
-        # Informações da rede
-        info_layout = QVBoxLayout()
-        info_layout.setSpacing(6)
+        icon_pixmap = qta.icon('fa5s.wifi', color=quality_color).pixmap(24, 24)
+        self.wifi_icon.setPixmap(icon_pixmap)
+        self.wifi_icon.setFixedSize(24, 24)
+        top_row.addWidget(self.wifi_icon)
         
         # Nome da rede
-        self.name_label = QLabel(self.network.ssid)
+        self.name_label = QLabel(self._elide_text(self.network.ssid, 30))
         name_font = QFont()
         name_font.setPointSize(13)
         name_font.setWeight(QFont.Weight.DemiBold)
         self.name_label.setFont(name_font)
         self.name_label.setStyleSheet("color: #0f172a;")
-        info_layout.addWidget(self.name_label)
+        self.name_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        top_row.addWidget(self.name_label)
         
-        # Badges de segurança e qualidade
-        badges_layout = QHBoxLayout()
-        badges_layout.setSpacing(8)
+        # Botão de olho
+        self.eye_button = QToolButton()
+        self.eye_button.setIcon(qta.icon('fa5s.eye', color='#64748b'))
+        self.eye_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.eye_button.setFixedSize(28, 28)
+        self.eye_button.setStyleSheet("""
+            QToolButton {
+                background-color: transparent;
+                border: none;
+                border-radius: 14px;
+            }
+            QToolButton:hover {
+                background-color: #f1f5f9;
+            }
+        """)
+        self.eye_button.clicked.connect(self.on_eye_clicked)
+        self.eye_button.setToolTip("Mostrar senha")
+        top_row.addWidget(self.eye_button)
+        
+        # Botão copiar
+        self.copy_button = QToolButton()
+        self.copy_button.setIcon(qta.icon('fa5s.copy', color='#64748b'))
+        self.copy_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.copy_button.setFixedSize(28, 28)
+        self.copy_button.setStyleSheet("""
+            QToolButton {
+                background-color: transparent;
+                border: none;
+                border-radius: 14px;
+            }
+            QToolButton:hover {
+                background-color: #f1f5f9;
+            }
+        """)
+        self.copy_button.clicked.connect(self.on_copy_clicked)
+        self.copy_button.setToolTip("Copiar senha")
+        top_row.addWidget(self.copy_button)
+        
+        # Desabilitar botões se não houver senha
+        has_password = bool(self.network.password)
+        self.eye_button.setEnabled(has_password)
+        self.copy_button.setEnabled(has_password)
+        
+        layout.addLayout(top_row)
+        
+        # Linha de badges
+        badges_row = QHBoxLayout()
+        badges_row.setSpacing(6)
         
         # Badge de autenticação
-        self.auth_badge = QLabel(f"  {self.network.auth}  ")
+        auth_text = self._elide_text(self.network.auth, 15)
+        self.auth_badge = QLabel(f"  {auth_text}  ")
         self.auth_badge.setStyleSheet("""
             QLabel {
                 background-color: #e2e8f0;
                 color: #334155;
                 border-radius: 4px;
                 padding: 2px 6px;
-                font-size: 11px;
+                font-size: 10px;
                 font-weight: 600;
+                max-height: 18px;
             }
         """)
-        badges_layout.addWidget(self.auth_badge)
+        badges_row.addWidget(self.auth_badge)
         
         # Badge de qualidade
         quality_text, quality_color = format_signal_quality(self.network.signal_quality)
@@ -138,154 +240,98 @@ class WifiCardWidget(QFrame):
                 color: {quality_color};
                 border-radius: 4px;
                 padding: 2px 6px;
-                font-size: 11px;
+                font-size: 10px;
                 font-weight: 600;
+                max-height: 18px;
             }}
         """)
-        badges_layout.addWidget(self.quality_badge)
-        badges_layout.addStretch()
+        badges_row.addWidget(self.quality_badge)
         
-        info_layout.addLayout(badges_layout)
-        layout.addLayout(info_layout, stretch=1)
+        # Badges de frequência
+        if self.network.frequencies:
+            for freq_info in self.network.frequencies[:2]:  # Máximo 2 badges
+                freq_badge = FrequencyBadge(freq_info)
+                badges_row.addWidget(freq_badge)
         
-        # Botão de olho
-        self.eye_button = QToolButton()
-        self.eye_button.setIcon(qta.icon('fa5s.eye', color='#64748b'))
-        self.eye_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.eye_button.setFixedSize(32, 32)
-        self.eye_button.setStyleSheet("""
-            QToolButton {
-                background-color: transparent;
-                border: none;
-                border-radius: 16px;
-            }
-            QToolButton:hover {
-                background-color: #f1f5f9;
-            }
-            QToolButton:pressed {
-                background-color: #e2e8f0;
-            }
-        """)
-        self.eye_button.clicked.connect(self.on_eye_clicked)
-        self.eye_button.setToolTip("Mostrar senha no painel de detalhes")
+        badges_row.addStretch()
+        layout.addLayout(badges_row)
         
-        # Botão copiar
-        self.copy_button = QToolButton()
-        self.copy_button.setIcon(qta.icon('fa5s.copy', color='#64748b'))
-        self.copy_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.copy_button.setFixedSize(32, 32)
-        self.copy_button.setStyleSheet("""
-            QToolButton {
-                background-color: transparent;
-                border: none;
-                border-radius: 16px;
-            }
-            QToolButton:hover {
-                background-color: #f1f5f9;
-            }
-            QToolButton:pressed {
-                background-color: #e2e8f0;
-            }
-        """)
-        self.copy_button.clicked.connect(self.on_copy_clicked)
-        self.copy_button.setToolTip("Copiar senha")
-        
-        # Desabilitar botões se não houver senha
-        has_password = bool(self.network.password)
-        self.eye_button.setEnabled(has_password)
-        self.copy_button.setEnabled(has_password)
-        
-        layout.addWidget(self.eye_button)
-        layout.addWidget(self.copy_button)
+        # Tooltip
+        self.setToolTip(self._generate_tooltip())
     
-    def setup_animations(self):
-        """Configura animações do card"""
-        self.hover_animation = QPropertyAnimation(self, b"geometry")
-        self.hover_animation.setDuration(200)
-        self.hover_animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+    def _elide_text(self, text: str, max_length: int) -> str:
+        if len(text) <= max_length:
+            return text
+        return text[:max_length-3] + "..."
+    
+    def _generate_tooltip(self) -> str:
+        lines = []
+        lines.append(f"<b>{self.network.ssid}</b>")
+        lines.append(f"Autenticação: {self.network.auth}")
+        lines.append(f"Criptografia: {self.network.encryption}")
+        lines.append(f"Sinal: {self.network.signal_quality}")
+        
+        if self.network.frequencies:
+            lines.append("<b>Frequências:</b>")
+            for freq in self.network.frequencies:
+                band_info = f"  • {freq.band}"
+                if freq.channel:
+                    band_info += f" (Canal {freq.channel})"
+                lines.append(band_info)
+        
+        return "<br>".join(lines)
     
     def setup_shadow(self):
-        """Configura sombra do card"""
         from PySide6.QtWidgets import QGraphicsDropShadowEffect
-        
         self.shadow = QGraphicsDropShadowEffect()
-        self.shadow.setBlurRadius(20)
-        self.shadow.setColor(QColor(0, 0, 0, 30))
+        self.shadow.setBlurRadius(15)
+        self.shadow.setColor(QColor(0, 0, 0, 20))
         self.shadow.setOffset(0, 2)
         self.setGraphicsEffect(self.shadow)
     
     def update_style(self):
-        """Atualiza o estilo baseado no estado"""
         if self.is_selected:
             self.setStyleSheet("""
                 QFrame {
                     background-color: #e8f0fe;
                     border: none;
-                    border-radius: 16px;
+                    border-radius: 12px;
                 }
             """)
-            self.shadow.setColor(QColor(37, 99, 235, 40))
+            self.shadow.setColor(QColor(37, 99, 235, 30))
         else:
             self.setStyleSheet("""
                 QFrame {
                     background-color: #ffffff;
                     border: none;
-                    border-radius: 16px;
+                    border-radius: 12px;
                 }
                 QFrame:hover {
                     background-color: #f8fafc;
                 }
             """)
-            self.shadow.setColor(QColor(0, 0, 0, 30))
+            self.shadow.setColor(QColor(0, 0, 0, 20))
     
     def set_selected(self, selected: bool):
-        """Define se o card está selecionado"""
         self.is_selected = selected
         self.update_style()
     
-    def enterEvent(self, event):
-        """Evento de mouse enter"""
-        super().enterEvent(event)
-        if not self.is_selected:
-            self.setStyleSheet("""
-                QFrame {
-                    background-color: #f8fafc;
-                    border: none;
-                    border-radius: 16px;
-                }
-            """)
-    
-    def leaveEvent(self, event):
-        """Evento de mouse leave"""
-        super().leaveEvent(event)
-        self.update_style()
-    
     def mousePressEvent(self, event):
-        """Evento de clique do mouse"""
         if event.button() == Qt.MouseButton.LeftButton:
             self.clicked.emit(self.network)
         super().mousePressEvent(event)
     
     def on_eye_clicked(self):
-        """Quando o olho é clicado"""
         self.eye_clicked.emit()
     
     def on_copy_clicked(self):
-        """Quando o botão copiar é clicado"""
         if self.network.password:
             self.copy_requested.emit(self.network.password)
-            
-            # Feedback visual
             self.copy_button.setIcon(qta.icon('fa5s.check', color='#10b981'))
-            self.copy_button.setToolTip("✓ Copiado!")
-            
-            # Restaurar após 800ms
             QTimer.singleShot(800, self.restore_copy_button)
     
     def restore_copy_button(self):
-        """Restaura o botão de cópia ao estado normal"""
         self.copy_button.setIcon(qta.icon('fa5s.copy', color='#64748b'))
-        self.copy_button.setToolTip("Copiar senha")
 
 
 class NetworkDetailsWidget(QFrame):
@@ -307,156 +353,177 @@ class NetworkDetailsWidget(QFrame):
             QFrame {
                 background-color: #ffffff;
                 border: 1px solid #e2e8f0;
-                border-radius: 16px;
+                border-radius: 12px;
             }
         """)
         
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 20, 24, 20)
-        layout.setSpacing(16)
+        layout.setContentsMargins(20, 16, 20, 16)
+        layout.setSpacing(12)
         
         # Título
-        title_layout = QHBoxLayout()
         title_label = QLabel("Detalhes da Rede")
         title_font = QFont()
         title_font.setPointSize(14)
         title_font.setWeight(QFont.Weight.Medium)
         title_label.setFont(title_font)
         title_label.setStyleSheet("color: #0f172a;")
-        title_layout.addWidget(title_label)
-        
-        # Badge de segurança
-        self.security_badge = QLabel()
-        self.security_badge.setStyleSheet("""
-            QLabel {
-                background-color: #e2e8f0;
-                color: #334155;
-                border-radius: 12px;
-                padding: 4px 12px;
-                font-size: 11px;
-                font-weight: 600;
-            }
-        """)
-        title_layout.addWidget(self.security_badge, alignment=Qt.AlignmentFlag.AlignRight)
-        
-        layout.addLayout(title_layout)
+        layout.addWidget(title_label)
         
         # Grid de detalhes
-        grid_layout = QVBoxLayout()
-        grid_layout.setSpacing(12)
+        self.details_layout = QVBoxLayout()
+        self.details_layout.setSpacing(8)
         
         self.detail_rows = {}
         fields = [
             ("SSID", "ssid"),
             ("Autenticação", "auth"),
             ("Criptografia", "encryption"),
+            ("Sinal", "signal_quality"),
             ("Última conexão", "last_connection")
         ]
         
         for label_text, field in fields:
-            row = QHBoxLayout()
-            row.setContentsMargins(0, 0, 0, 0)
-            
-            # Label
-            label = QLabel(label_text)
-            label.setStyleSheet("color: #64748b; font-size: 12px;")
-            label.setFixedWidth(120)
-            row.addWidget(label)
-            
-            # Valor
-            value_label = QLabel("-")
-            value_label.setStyleSheet("color: #0f172a; font-size: 12px; font-weight: 500;")
-            value_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-            row.addWidget(value_label)
-            row.addStretch()
-            
-            self.detail_rows[field] = value_label
-            grid_layout.addLayout(row)
+            row = self._create_detail_row(label_text, field)
+            self.details_layout.addLayout(row)
+        
+        # Linha de frequências
+        self.frequency_layout = QHBoxLayout()
+        self.frequency_layout.setContentsMargins(0, 0, 0, 0)
+        self.frequency_layout.setSpacing(8)
+        
+        freq_label = QLabel("Frequência")
+        freq_label.setStyleSheet("color: #64748b; font-size: 12px;")
+        freq_label.setFixedWidth(90)
+        self.frequency_layout.addWidget(freq_label)
+        
+        self.frequency_container = QWidget()
+        self.frequency_container_layout = QHBoxLayout(self.frequency_container)
+        self.frequency_container_layout.setContentsMargins(0, 0, 0, 0)
+        self.frequency_container_layout.setSpacing(6)
+        self.frequency_layout.addWidget(self.frequency_container, 1)
+        
+        self.details_layout.addLayout(self.frequency_layout)
         
         # Linha da senha
-        password_row = QHBoxLayout()
+        password_row = self._create_password_row()
+        self.details_layout.addLayout(password_row)
         
-        password_label = QLabel("Chave de segurança")
-        password_label.setStyleSheet("color: #64748b; font-size: 12px;")
-        password_label.setFixedWidth(120)
-        password_row.addWidget(password_label)
+        # Linha HEX (inicialmente oculta)
+        self.hex_row = self._create_hex_row()
+        self.details_layout.addLayout(self.hex_row)
         
+        layout.addLayout(self.details_layout)
+        layout.addStretch()
+    
+    def _create_detail_row(self, label_text: str, field: str) -> QHBoxLayout:
+        """Cria uma linha de detalhe"""
+        row = QHBoxLayout()
+        row.setContentsMargins(0, 0, 0, 0)
+        row.setSpacing(8)
+        
+        # Label
+        label = QLabel(label_text)
+        label.setStyleSheet("color: #64748b; font-size: 12px;")
+        label.setFixedWidth(90)
+        row.addWidget(label)
+        
+        # Valor
+        value_label = QLabel("-")
+        value_label.setStyleSheet("color: #0f172a; font-size: 12px; font-weight: 500;")
+        value_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        value_label.setWordWrap(True)
+        value_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        row.addWidget(value_label, 1)
+        
+        self.detail_rows[field] = value_label
+        return row
+    
+    def _create_password_row(self) -> QHBoxLayout:
+        """Cria linha da senha com botões"""
+        row = QHBoxLayout()
+        row.setContentsMargins(0, 0, 0, 0)
+        row.setSpacing(8)
+        
+        # Label
+        label = QLabel("Chave")
+        label.setStyleSheet("color: #64748b; font-size: 12px;")
+        label.setFixedWidth(90)
+        row.addWidget(label)
+        
+        # Valor da senha
         self.password_value = QLabel("********")
         self.password_value.setStyleSheet("color: #0f172a; font-size: 12px; font-weight: 500;")
         self.password_value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        password_row.addWidget(self.password_value)
+        self.password_value.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        row.addWidget(self.password_value, 1)
         
-        # Botão revelar senha
+        # Botão revelar
         self.toggle_password_btn = QToolButton()
         self.toggle_password_btn.setIcon(qta.icon('fa5s.eye', color='#64748b'))
         self.toggle_password_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.toggle_password_btn.setFixedSize(28, 28)
+        self.toggle_password_btn.setFixedSize(24, 24)
         self.toggle_password_btn.setStyleSheet("""
             QToolButton {
                 background-color: transparent;
                 border: none;
-                border-radius: 14px;
+                border-radius: 12px;
             }
             QToolButton:hover {
                 background-color: #f1f5f9;
             }
-            QToolButton:pressed {
-                background-color: #e2e8f0;
-            }
         """)
         self.toggle_password_btn.clicked.connect(self.toggle_password_visibility)
         self.toggle_password_btn.setToolTip("Mostrar senha")
-        password_row.addWidget(self.toggle_password_btn)
+        row.addWidget(self.toggle_password_btn)
         
         # Botão copiar
         self.copy_password_btn = QToolButton()
         self.copy_password_btn.setIcon(qta.icon('fa5s.copy', color='#64748b'))
         self.copy_password_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.copy_password_btn.setFixedSize(28, 28)
+        self.copy_password_btn.setFixedSize(24, 24)
         self.copy_password_btn.setStyleSheet("""
             QToolButton {
                 background-color: transparent;
                 border: none;
-                border-radius: 14px;
+                border-radius: 12px;
             }
             QToolButton:hover {
                 background-color: #f1f5f9;
             }
-            QToolButton:pressed {
-                background-color: #e2e8f0;
-            }
         """)
         self.copy_password_btn.clicked.connect(self.copy_password)
         self.copy_password_btn.setToolTip("Copiar senha")
-        password_row.addWidget(self.copy_password_btn)
+        row.addWidget(self.copy_password_btn)
         
-        password_row.addStretch()
-        grid_layout.addLayout(password_row)
+        return row
+    
+    def _create_hex_row(self) -> QHBoxLayout:
+        """Cria linha para chave HEX"""
+        row = QHBoxLayout()
+        row.setContentsMargins(0, 0, 0, 0)
         
-        # Linha HEX
-        hex_row = QHBoxLayout()
-        hex_label = QLabel("Chave (HEX)")
-        hex_label.setStyleSheet("color: #64748b; font-size: 11px;")
-        hex_label.setFixedWidth(120)
-        hex_row.addWidget(hex_label)
+        # Label
+        label = QLabel("Chave HEX")
+        label.setStyleSheet("color: #64748b; font-size: 11px;")
+        label.setFixedWidth(90)
+        row.addWidget(label)
         
+        # Valor HEX
         self.hex_value = QLabel("")
         self.hex_value.setStyleSheet("color: #2563eb; font-size: 11px; font-family: monospace;")
-        hex_row.addWidget(self.hex_value)
-        hex_row.addStretch()
+        self.hex_value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.hex_value.setWordWrap(True)
+        self.hex_value.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        row.addWidget(self.hex_value, 1)
         
-        self.hex_container = hex_row
-        grid_layout.addLayout(hex_row)
-        
-        layout.addLayout(grid_layout)
+        return row
     
     def setup_shadow(self):
-        """Configura sombra do widget"""
         from PySide6.QtWidgets import QGraphicsDropShadowEffect
-        
         self.shadow = QGraphicsDropShadowEffect()
-        self.shadow.setBlurRadius(20)
-        self.shadow.setColor(QColor(0, 0, 0, 20))
+        self.shadow.setBlurRadius(15)
+        self.shadow.setColor(QColor(0, 0, 0, 15))
         self.shadow.setOffset(0, 2)
         self.setGraphicsEffect(self.shadow)
     
@@ -468,12 +535,13 @@ class NetworkDetailsWidget(QFrame):
         self.detail_rows["ssid"].setText(network.ssid)
         self.detail_rows["auth"].setText(network.auth)
         self.detail_rows["encryption"].setText(network.encryption)
+        self.detail_rows["signal_quality"].setText(network.signal_quality)
         self.detail_rows["last_connection"].setText(
             network.last_connection if network.last_connection else "Não disponível"
         )
         
-        # Atualizar badge de segurança
-        self.security_badge.setText(f"  {network.auth}  ")
+        # Atualizar frequências
+        self._update_frequencies()
         
         # Armazenar senha real
         self.real_password = network.password
@@ -491,8 +559,33 @@ class NetworkDetailsWidget(QFrame):
         if network.password_hex:
             self.hex_value.setText(network.password_hex)
             self.hex_value.setVisible(True)
+            self.hex_row.itemAt(0).widget().setVisible(True)
+            self.hex_row.itemAt(1).widget().setVisible(True)
         else:
             self.hex_value.setVisible(False)
+            self.hex_row.itemAt(0).widget().setVisible(False)
+            self.hex_row.itemAt(1).widget().setVisible(False)
+    
+    def _update_frequencies(self):
+        """Atualiza a exibição das frequências"""
+        # Limpar container
+        while self.frequency_container_layout.count():
+            item = self.frequency_container_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        
+        if self.network.frequencies:
+            for freq_info in self.network.frequencies:
+                badge = FrequencyBadge(freq_info)
+                self.frequency_container_layout.addWidget(badge)
+            
+            self.frequency_container_layout.addStretch()
+            self.frequency_container.setVisible(True)
+        else:
+            # Mostrar mensagem se não há frequência
+            no_freq_label = QLabel("Não disponível")
+            no_freq_label.setStyleSheet("color: #94a3b8; font-size: 12px; font-style: italic;")
+            self.frequency_container_layout.addWidget(no_freq_label)
     
     def update_password_display(self):
         """Atualiza a exibição da senha"""

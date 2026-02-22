@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from PySide6.QtCore import QObject, Signal, QRunnable, Slot
 import traceback
 
+from core.frequency import RealFrequencyDetector, FrequencyInfo
+
 
 @dataclass
 class WifiNetwork:
@@ -22,12 +24,33 @@ class WifiNetwork:
     password_hex: Optional[str] = None
     last_connection: Optional[str] = None
     signal_quality: str = "Desconhecido"
+    frequencies: List[FrequencyInfo] = None
+    
+    def __post_init__(self):
+        if self.frequencies is None:
+            self.frequencies = []
+    
+    @property
+    def bands(self) -> List[str]:
+        """Retorna lista de bandas (2.4 GHz, 5 GHz, 6 GHz)"""
+        return list(set([f.band for f in self.frequencies if f.band]))
+    
+    @property
+    def has_5ghz(self) -> bool:
+        return "5 GHz" in self.bands
+    
+    @property
+    def has_6ghz(self) -> bool:
+        return "6 GHz" in self.bands
+    
+    @property
+    def has_24ghz(self) -> bool:
+        return "2.4 GHz" in self.bands
 
 
 class WifiScannerWorker(QRunnable):
     """
     Worker para executar o scan em thread separada
-    Não bloqueia a UI
     """
     
     class Signals(QObject):
@@ -38,27 +61,34 @@ class WifiScannerWorker(QRunnable):
     def __init__(self):
         super().__init__()
         self.signals = self.Signals()
+        self.freq_detector = RealFrequencyDetector()
     
     @Slot()
     def run(self):
         """Executa o scan em thread separada"""
         try:
             self.signals.progress.emit("Iniciando scan de redes Wi-Fi...")
-            networks = self.scan_real_networks()
+            
+            # Escaneia frequências primeiro
+            self.signals.progress.emit("Detectando frequências das redes...")
+            freq_data = self.freq_detector.scan_current_networks()
+            
+            # Depois obtém os perfis
+            networks = self.scan_real_networks(freq_data)
+            
             self.signals.finished.emit(networks)
         except Exception as e:
-            error_msg = f"Erro no scan: {str(e)}\n{traceback.format_exc()}"
-            print(error_msg)  # Log para debug
+            error_msg = f"Erro no scan: {str(e)}"
+            print(error_msg)
             self.signals.error.emit(f"Falha ao escanear redes: {str(e)}")
     
-    def scan_real_networks(self) -> List[WifiNetwork]:
+    def scan_real_networks(self, freq_data: Dict[str, List[FrequencyInfo]]) -> List[WifiNetwork]:
         """
         Escaneia redes WiFi REAIS do Windows
-        SEM dados mockados
         """
         networks = []
         
-        # Passo 1: Listar todos os perfis reais
+        # Listar todos os perfis reais
         profiles = self.get_real_profiles()
         
         if not profiles:
@@ -67,14 +97,29 @@ class WifiScannerWorker(QRunnable):
         
         self.signals.progress.emit(f"Encontrados {len(profiles)} perfis")
         
-        # Passo 2: Para cada perfil, obter detalhes reais
+        # Para cada perfil, obter detalhes reais
         for profile_name in profiles:
-            network = self.get_real_network_details(profile_name)
-            if network:
-                networks.append(network)
-            
-            # Pequena pausa para não sobrecarregar
-            time.sleep(0.1)
+            try:
+                network = self.get_real_network_details(profile_name)
+                
+                # Adicionar frequências reais
+                if network:
+                    if profile_name in freq_data:
+                        network.frequencies = freq_data[profile_name]
+                    else:
+                        # Tenta buscar por SSID similar
+                        for freq_ssid, freqs in freq_data.items():
+                            if freq_ssid.lower() == profile_name.lower():
+                                network.frequencies = freqs
+                                break
+                    
+                    networks.append(network)
+                
+                time.sleep(0.05)  # Pequena pausa
+                
+            except Exception as e:
+                print(f"Erro ao processar perfil {profile_name}: {e}")
+                continue
         
         # Ordenar por nome
         networks.sort(key=lambda x: x.ssid.lower())
@@ -89,7 +134,6 @@ class WifiScannerWorker(QRunnable):
         profiles = []
         
         try:
-            # Comando real do Windows
             result = subprocess.run(
                 ["netsh", "wlan", "show", "profiles"],
                 capture_output=True,
@@ -100,17 +144,14 @@ class WifiScannerWorker(QRunnable):
             )
             
             if result.returncode != 0:
-                print(f"Erro ao executar netsh: {result.stderr}")
                 return []
             
             output = result.stdout
             
-            # Extrair nomes dos perfis (funciona em português e inglês)
+            # Extrair nomes dos perfis
             lines = output.split('\n')
             for line in lines:
                 line = line.strip()
-                
-                # Padrões para diferentes idiomas
                 if ':' in line:
                     if 'perfil' in line.lower() or 'profile' in line.lower():
                         parts = line.split(':', 1)
@@ -118,33 +159,15 @@ class WifiScannerWorker(QRunnable):
                             name = parts[1].strip()
                             if name and name not in profiles:
                                 profiles.append(name)
-                    elif 'todos os perfis de usuário' in line.lower() or 'all user profile' in line.lower():
-                        parts = line.split(':', 1)
-                        if len(parts) > 1:
-                            name = parts[1].strip()
-                            if name and name not in profiles:
-                                profiles.append(name)
             
-            # Se não encontrou com o método acima, tentar regex
+            # Se não encontrou, tentar regex
             if not profiles:
-                # Padrões regex para diferentes formatos
-                patterns = [
-                    r":\s+(.+)$",
-                    r"Perfil\s+:\s+(.+)$",
-                    r"Profile\s+:\s+(.+)$",
-                ]
-                
-                for pattern in patterns:
-                    matches = re.findall(pattern, output, re.MULTILINE)
-                    if matches:
-                        profiles = [m.strip() for m in matches if m.strip()]
-                        break
-            
-            print(f"Perfis encontrados: {profiles}")
+                pattern = r":\s+(.+)$"
+                matches = re.findall(pattern, output, re.MULTILINE)
+                profiles = [m.strip() for m in matches if m.strip()]
             
         except Exception as e:
-            print(f"Exceção ao listar perfis: {e}")
-            traceback.print_exc()
+            print(f"Erro ao listar perfis: {e}")
         
         return profiles
     
@@ -153,7 +176,7 @@ class WifiScannerWorker(QRunnable):
         Obtém detalhes REAIS de uma rede específica
         """
         try:
-            # Comando real com key=clear para obter a senha
+            # Comando com key=clear para obter a senha
             cmd = [
                 "netsh", "wlan", "show", "profile",
                 f"name={profile_name}", "key=clear"
@@ -169,7 +192,6 @@ class WifiScannerWorker(QRunnable):
             )
             
             if result.returncode != 0:
-                print(f"Erro ao obter detalhes de {profile_name}")
                 return None
             
             output = result.stdout
@@ -177,58 +199,47 @@ class WifiScannerWorker(QRunnable):
             # Extrair autenticação
             auth = self.extract_field(output, [
                 r"Autenticação\s*:\s*(.+)$",
-                r"Authentication\s*:\s*(.+)$",
-                r"Método de autenticação\s*:\s*(.+)$"
-            ]) or "Desconhecido"
+                r"Authentication\s*:\s*(.+)$"
+            ])
+            if not auth:
+                auth = "Desconhecido"
             
             # Extrair criptografia
             encryption = self.extract_field(output, [
                 r"Cifra\s*:\s*(.+)$",
-                r"Cipher\s*:\s*(.+)$",
-                r"Codificação\s*:\s*(.+)$"
-            ]) or "Desconhecido"
+                r"Cipher\s*:\s*(.+)$"
+            ])
+            if not encryption:
+                encryption = "Desconhecido"
             
-            # Extrair senha REAL
+            # Extrair senha
             password = self.extract_field(output, [
                 r"Conteúdo da Chave\s*:\s*(.+)$",
-                r"Key Content\s*:\s*(.+)$",
-                r"Senha\s*:\s*(.+)$",
-                r"Password\s*:\s*(.+)$"
+                r"Key Content\s*:\s*(.+)$"
             ])
             
-            # Se não encontrou com os padrões, tentar buscar em linhas específicas
-            if not password:
-                lines = output.split('\n')
-                for i, line in enumerate(lines):
-                    if any(k in line.lower() for k in ['chave', 'key', 'senha', 'password']):
-                        if ':' in line:
-                            password = line.split(':', 1)[1].strip()
-                            break
-            
-            # Gerar HEX da senha se disponível
+            # Gerar HEX da senha
             password_hex = None
-            if password and password != "********" and password != "Nenhuma":
+            if password and password not in ["********", "Nenhuma", ""]:
                 try:
-                    password_hex = password.encode('utf-8').hex()
+                    password_hex = password.encode('utf-8').hex().upper()
                     if len(password_hex) > 32:
                         password_hex = password_hex[:32] + "..."
                 except:
-                    pass
+                    password_hex = None
             
-            # Determinar qualidade do sinal baseado no tipo de segurança
+            # Determinar qualidade
             signal_quality = self.determine_signal_quality(auth, password)
-            
-            # Tentar obter última conexão (pode não estar disponível)
-            last_connection = self.get_last_connection_time(profile_name)
             
             return WifiNetwork(
                 ssid=profile_name,
                 auth=auth,
                 encryption=encryption,
-                password=password if password and password != "********" else None,
+                password=password if password and password not in ["********", "Nenhuma"] else None,
                 password_hex=f"[Hex {password_hex}]" if password_hex else None,
-                last_connection=last_connection,
-                signal_quality=signal_quality
+                last_connection=None,
+                signal_quality=signal_quality,
+                frequencies=[]
             )
             
         except Exception as e:
@@ -246,9 +257,7 @@ class WifiScannerWorker(QRunnable):
         return None
     
     def determine_signal_quality(self, auth: str, password: Optional[str]) -> str:
-        """
-        Determina qualidade baseado em características reais da rede
-        """
+        """Determina qualidade baseado no tipo de segurança"""
         auth_lower = auth.lower()
         
         if "enterprise" in auth_lower:
@@ -263,41 +272,14 @@ class WifiScannerWorker(QRunnable):
             return "Fraco"
         else:
             return "Desconhecido"
-    
-    def get_last_connection_time(self, profile_name: str) -> Optional[str]:
-        """
-        Tenta obter a última conexão (pode não estar disponível via netsh)
-        """
-        try:
-            # Tentar obter informações adicionais
-            cmd = ["netsh", "wlan", "show", "profiles", profile_name]
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                encoding='utf-8',
-                errors='ignore'
-            )
-            
-            # Procurar por data de modificação
-            output = result.stdout
-            for line in output.split('\n'):
-                if "aplicado" in line.lower() or "applied" in line.lower():
-                    return line.strip()
-        except:
-            pass
-        
-        # Se não conseguir, retorna None (o sistema pode mostrar "Não disponível")
-        return None
 
 
 class WifiScanner(QObject):
     """
     Serviço de scan REAL de Wi-Fi
-    Opera em thread separada para não travar a UI
     """
     
-    scan_finished = Signal(list)  # List[WifiNetwork]
+    scan_finished = Signal(list)
     scan_error = Signal(str)
     scan_progress = Signal(str)
     
@@ -307,37 +289,24 @@ class WifiScanner(QObject):
         self.last_networks = []
     
     def scan_networks(self):
-        """
-        Inicia scan REAL em thread separada
-        """
+        """Inicia scan REAL em thread separada"""
         from PySide6.QtCore import QThreadPool
         
         self.thread_pool = QThreadPool.globalInstance()
         
-        # Criar worker
         worker = WifiScannerWorker()
         worker.signals.finished.connect(self.on_scan_finished)
         worker.signals.error.connect(self.on_scan_error)
         worker.signals.progress.connect(self.on_scan_progress)
         
-        # Executar
         self.thread_pool.start(worker)
     
     def on_scan_finished(self, networks):
-        """Callback quando scan termina com sucesso"""
         self.last_networks = networks
         self.scan_finished.emit(networks)
     
     def on_scan_error(self, error_msg):
-        """Callback quando ocorre erro no scan"""
-        print(f"Erro no scan: {error_msg}")
         self.scan_error.emit(error_msg)
     
     def on_scan_progress(self, progress_msg):
-        """Callback para progresso do scan"""
-        print(f"Progresso: {progress_msg}")
         self.scan_progress.emit(progress_msg)
-    
-    def get_last_networks(self):
-        """Retorna últimas redes escaneadas"""
-        return self.last_networks

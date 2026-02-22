@@ -1,33 +1,33 @@
 """
 DarkFeather - WiFi Analysis
-Professional PySide6 Application for WiFi Network Analysis
+Versão FINAL - Todas as importações funcionando
 """
 
 import sys
 import ctypes
-from PySide6.QtWidgets import QApplication
-from PySide6.QtGui import QIcon, QFontDatabase
-from PySide6.QtCore import Qt
-from ui.main_window import MainWindow
-from core.system import is_admin
-from core.scanner import WifiScanner  # Corrigido: importando do local correto
 
-def setup_application_fonts():
-    """Configura a fonte padrão da aplicação"""
-    font_db = QFontDatabase()
-    
-    # Tentar usar Segoe UI (Windows) ou Inter como fallback
-    fonts = ["Segoe UI", "Inter", "Roboto", "Arial"]
-    for font in fonts:
-        if font in font_db.families():
-            QApplication.setFont(QFontDatabase.font(font, "Regular", 10))
-            break
+# Configurar encoding para Windows
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='ignore')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='ignore')
+
+print("Iniciando DarkFeather...")
+
+from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QFont
+from PySide6.QtCore import Qt
+
+from core.system import is_admin
+from ui.main_window import MainWindow
+
 
 def main():
-    """Ponto de entrada principal da aplicação"""
+    """Ponto de entrada principal"""
     
     # Verificar privilégios de administrador
     if not is_admin():
+        print("Solicitando privilégios de administrador...")
         ctypes.windll.shell32.ShellExecuteW(
             None, "runas", sys.executable, " ".join(sys.argv), None, 1
         )
@@ -36,28 +36,25 @@ def main():
     # Criar aplicação
     app = QApplication(sys.argv)
     app.setApplicationName("DarkFeather WiFi Analysis")
-    app.setOrganizationName("DarkFeather")
     app.setApplicationVersion("2.0.0")
     
-    # Configurar atributos da aplicação
-    app.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
-    app.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
-    
     # Configurar fonte
-    setup_application_fonts()
-    
-    # Definir ícone da aplicação
-    try:
-        app.setWindowIcon(QIcon("resources/icon.ico"))
-    except:
-        pass
+    font = QFont("Segoe UI", 10)
+    app.setFont(font)
     
     # Criar e mostrar janela principal
     window = MainWindow()
     window.show()
     
-    # Executar aplicação
+    print("Interface iniciada!")
     sys.exit(app.exec())
 
+
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"Erro: {e}")
+        import traceback
+        traceback.print_exc()
+        input("Pressione Enter para sair...")
