@@ -1,12 +1,13 @@
 """
 MainWindow principal da aplicação DarkFeather WiFi Analysis
-Design moderno e refinado - PROPORÇÕES AJUSTADAS
+Design moderno e refinado - COM FEATURE DE REDE LOCAL
 """
 
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLabel, QScrollArea, QFrame, QApplication,
-    QMessageBox, QSizePolicy, QGraphicsDropShadowEffect
+    QMessageBox, QSizePolicy, QGraphicsDropShadowEffect,
+    QDialog
 )
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, Slot
 from PySide6.QtGui import QFont, QColor, QPalette
@@ -16,7 +17,7 @@ from ui.widgets import WifiCardWidget, LoadingSpinner
 from ui.modern_details_widget import ModernDetailsWidget as NetworkDetailsWidget
 from ui.theme import UIThemeManager
 from core.scanner import WifiScanner, WifiNetwork
-from core.report import ReportGenerator
+from core.auditoria import Auditoria
 from audit.logger import AuditLogger
 from core.security import SecurityAnalyzer
 
@@ -30,7 +31,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.scanner = WifiScanner()
         self.theme = UIThemeManager()
-        self.audit = AuditLogger()
+        self.audit_logger = AuditLogger()
+        self.auditoria = Auditoria()
         self.networks = []
         self.selected_network = None
         self.network_cards = []
@@ -41,7 +43,7 @@ class MainWindow(QMainWindow):
         self.setup_connections()
         
         # Registrar inicialização
-        self.audit.log_app_started()
+        self.audit_logger.log_app_started()
         
         # Configurar para iniciar maximizado
         self.showMaximized()
@@ -50,11 +52,10 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(100, self.start_scan)
     
     def setup_ui(self):
-        """Configura a interface do usuário com design moderno"""
+        """Configura a interface do usuário"""
         self.setWindowTitle("DarkFeather WiFi Analysis")
         self.setMinimumSize(1300, 800)
         
-        # Aplicar tema
         self.setPalette(self.theme.get_palette())
         self.setStyleSheet(self.get_global_style())
         
@@ -109,7 +110,7 @@ class MainWindow(QMainWindow):
         """
     
     def setup_header(self):
-        """Configura o cabeçalho moderno"""
+        """Configura o cabeçalho com botões de ação"""
         header_widget = QWidget()
         header_widget.setObjectName("headerWidget")
         header_widget.setFixedHeight(70)
@@ -139,7 +140,7 @@ class MainWindow(QMainWindow):
         icon_layout.setAlignment(Qt.AlignCenter)
         
         icon_label = QLabel()
-        icon_label.setPixmap(qta.icon('fa5s.wifi', color='#ffffff').pixmap(24, 24))
+        icon_label.setPixmap(qta.icon("fa5s.wifi", color="#ffffff").pixmap(24, 24))
         icon_layout.addWidget(icon_label)
         logo_layout.addWidget(icon_frame)
         
@@ -170,7 +171,7 @@ class MainWindow(QMainWindow):
         
         header_layout.addStretch()
         
-        # Ações
+        # Container de ações
         actions_container = QWidget()
         actions_layout = QHBoxLayout(actions_container)
         actions_layout.setContentsMargins(0, 0, 0, 0)
@@ -179,31 +180,41 @@ class MainWindow(QMainWindow):
         # Botão Segurança
         self.btn_security = self.create_modern_button(
             " Segurança", 
-            'fa5s.shield-alt', 
+            "fa5s.shield-alt", 
             "#8b5cf6",
             "#7c3aed"
         )
         self.btn_security.clicked.connect(self.open_security_window)
         actions_layout.addWidget(self.btn_security)
         
+        # Botão Rede Local
+        self.btn_rede = self.create_modern_button(
+            " Rede Local", 
+            "fa5s.network-wired", 
+            "#7c3aed",
+            "#6d28d9"
+        )
+        self.btn_rede.clicked.connect(self.abrir_rede_local)
+        actions_layout.addWidget(self.btn_rede)
+        
         # Botão atualizar
         self.btn_refresh = self.create_modern_button(
             " Atualizar", 
-            'fa5s.sync-alt', 
+            "fa5s.sync-alt", 
             "#2563eb",
             "#1d4ed8"
         )
         actions_layout.addWidget(self.btn_refresh)
         
-        # Botão relatório
-        self.btn_report = self.create_modern_button(
-            " Relatório", 
-            'fa5s.file-alt', 
+        # Botão Auditoria
+        self.btn_auditoria = self.create_modern_button(
+            " Auditoria", 
+            "fa5s.clipboard-list",
             "#059669",
             "#047857"
         )
-        self.btn_report.clicked.connect(self.generate_report)
-        actions_layout.addWidget(self.btn_report)
+        self.btn_auditoria.clicked.connect(self.executar_auditoria)
+        actions_layout.addWidget(self.btn_auditoria)
         
         # Loading spinner
         self.spinner = LoadingSpinner()
@@ -217,7 +228,7 @@ class MainWindow(QMainWindow):
     def create_modern_button(self, text: str, icon: str, color: str, hover_color: str) -> QPushButton:
         """Cria botão moderno com efeitos"""
         btn = QPushButton(text)
-        btn.setIcon(qta.icon(icon, color='#ffffff'))
+        btn.setIcon(qta.icon(icon, color="#ffffff"))
         btn.setCursor(Qt.PointingHandCursor)
         btn.setFixedSize(120, 40)
         btn.setStyleSheet(f"""
@@ -248,7 +259,7 @@ class MainWindow(QMainWindow):
         return btn
     
     def setup_metrics_bar(self):
-        """Configura barra de métricas compacta"""
+        """Configura barra de métricas"""
         metrics_widget = QWidget()
         metrics_widget.setFixedHeight(80)
         
@@ -257,35 +268,19 @@ class MainWindow(QMainWindow):
         metrics_layout.setSpacing(12)
         
         # Card de saúde
-        self.health_card = self.create_metric_card(
-            "Saúde", 
-            "0%", 
-            "#059669"
-        )
+        self.health_card = self.create_metric_card("Saúde", "0%", "#059669")
         metrics_layout.addWidget(self.health_card)
         
         # Card de redes
-        self.networks_card = self.create_metric_card(
-            "Redes", 
-            "0", 
-            "#2563eb"
-        )
+        self.networks_card = self.create_metric_card("Redes", "0", "#2563eb")
         metrics_layout.addWidget(self.networks_card)
         
         # Card de risco alto
-        self.high_risk_card = self.create_metric_card(
-            "Risco Alto", 
-            "0", 
-            "#dc2626"
-        )
+        self.high_risk_card = self.create_metric_card("Risco Alto", "0", "#dc2626")
         metrics_layout.addWidget(self.high_risk_card)
         
         # Card de risco médio
-        self.medium_risk_card = self.create_metric_card(
-            "Risco Médio", 
-            "0", 
-            "#d97706"
-        )
+        self.medium_risk_card = self.create_metric_card("Risco Médio", "0", "#d97706")
         metrics_layout.addWidget(self.medium_risk_card)
         
         metrics_layout.addStretch()
@@ -301,12 +296,10 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(12, 10, 12, 10)
         layout.setSpacing(8)
         
-        # Valor
         value_label = QLabel(value)
         value_label.setStyleSheet(f"color: {color}; font-size: 22px; font-weight: 700;")
         layout.addWidget(value_label)
         
-        # Título
         title_label = QLabel(title)
         title_label.setStyleSheet("color: #475569; font-size: 11px; font-weight: 600;")
         title_label.setWordWrap(True)
@@ -318,7 +311,7 @@ class MainWindow(QMainWindow):
         return card
     
     def setup_content_area(self):
-        """Configura a área de conteúdo principal com novas proporções"""
+        """Configura a área de conteúdo principal"""
         content_widget = QWidget()
         content_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
@@ -326,21 +319,21 @@ class MainWindow(QMainWindow):
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(16)
         
-        # Painel esquerdo - Lista de redes (35%)
+        # Painel esquerdo - Lista de redes
         self.setup_networks_panel(content_layout)
         
-        # Painel direito - Detalhes da rede (65%)
+        # Painel direito - Detalhes da rede
         self.setup_details_panel(content_layout)
         
         self.main_layout.addWidget(content_widget, stretch=1)
     
     def setup_networks_panel(self, parent_layout):
-        """Configura o painel esquerdo com lista de redes - MAIS ESTREITO"""
+        """Configura o painel esquerdo com lista de redes"""
         panel = QFrame()
         panel.setObjectName("networksPanel")
         panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         panel.setMinimumWidth(320)
-        panel.setMaximumWidth(380)  # Limitado para não expandir demais
+        panel.setMaximumWidth(380)
         
         panel_layout = QVBoxLayout(panel)
         panel_layout.setContentsMargins(16, 16, 16, 16)
@@ -387,19 +380,19 @@ class MainWindow(QMainWindow):
         self.scroll_area.setWidget(scroll_content)
         panel_layout.addWidget(self.scroll_area)
         
-        parent_layout.addWidget(panel, stretch=35)  # 35% do espaço
+        parent_layout.addWidget(panel, stretch=35)
     
     def setup_details_panel(self, parent_layout):
-        """Configura o painel direito com detalhes - MAIS LARGO"""
+        """Configura o painel direito com detalhes"""
         self.details_widget = NetworkDetailsWidget()
         self.details_widget.setVisible(False)
         self.details_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.details_widget.setMinimumWidth(500)  # Aumentado
+        self.details_widget.setMinimumWidth(500)
         
-        parent_layout.addWidget(self.details_widget, stretch=65)  # 65% do espaço
+        parent_layout.addWidget(self.details_widget, stretch=65)
     
     def setup_status_bar(self):
-        """Configura a barra de status moderna"""
+        """Configura a barra de status"""
         self.status_bar = self.statusBar()
         self.status_bar.setStyleSheet("""
             QStatusBar {
@@ -445,7 +438,7 @@ class MainWindow(QMainWindow):
     def on_scan_finished(self, networks):
         """Callback quando scan termina"""
         self.networks = networks
-        self.audit.log_scan_finished(len(networks))
+        self.audit_logger.log_scan_finished(len(networks))
         
         # Analisar segurança
         self.security_analysis = {}
@@ -565,7 +558,7 @@ class MainWindow(QMainWindow):
         if password and self.selected_network:
             clipboard = QApplication.clipboard()
             clipboard.setText(password)
-            self.audit.log_password_copied(self.selected_network.ssid)
+            self.audit_logger.log_password_copied(self.selected_network.ssid)
             self.status_label.setText("✓ Senha copiada")
             QTimer.singleShot(2000, lambda: self.status_label.setText("Pronto"))
         else:
@@ -584,49 +577,150 @@ class MainWindow(QMainWindow):
         self.security_window = SecurityWindow(self.networks, self)
         self.security_window.show()
     
-    def generate_report(self):
+    def abrir_rede_local(self):
+        """Abre a janela de rede local - VERSÃO SIMPLIFICADA"""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("DarkFeather - Rede Local")
+        dialog.setFixedSize(300, 220)
+        dialog.setStyleSheet("""
+            QDialog {
+                background-color: white;
+                border-radius: 16px;
+            }
+            QPushButton {
+                font-size: 14px;
+                padding: 12px;
+                border-radius: 8px;
+                font-weight: 600;
+                margin: 5px 15px;
+            }
+            QLabel {
+                font-size: 18px;
+                font-weight: bold;
+                color: #0f172a;
+                padding: 10px;
+            }
+        """)
+        
+        layout = QVBoxLayout(dialog)
+        layout.setSpacing(10)
+        
+        # Título
+        title = QLabel("🌐 Rede Local")
+        title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title)
+        
+        # Descrição
+        desc = QLabel("Inicie um servidor ou conecte-se como cliente")
+        desc.setStyleSheet("font-size: 12px; color: #64748b; font-weight: normal;")
+        desc.setAlignment(Qt.AlignCenter)
+        desc.setWordWrap(True)
+        layout.addWidget(desc)
+        
+        # Botão Servidor
+        btn_servidor = QPushButton(" Iniciar Servidor")
+        btn_servidor.setIcon(qta.icon('fa5s.server', color='white'))
+        btn_servidor.setStyleSheet("background-color: #059669; color: white;")
+        btn_servidor.clicked.connect(lambda: self.abrir_servidor(dialog))
+        layout.addWidget(btn_servidor)
+        
+        # Botão Cliente
+        btn_cliente = QPushButton(" Conectar como Cliente")
+        btn_cliente.setIcon(qta.icon('fa5s.desktop', color='white'))
+        btn_cliente.setStyleSheet("background-color: #2563eb; color: white;")
+        btn_cliente.clicked.connect(lambda: self.abrir_cliente(dialog))
+        layout.addWidget(btn_cliente)
+        
+        # Botão Cancelar
+        btn_cancelar = QPushButton(" Cancelar")
+        btn_cancelar.setIcon(qta.icon('fa5s.times', color='#334155'))
+        btn_cancelar.setStyleSheet("background-color: #f1f5f9; color: #334155;")
+        btn_cancelar.clicked.connect(dialog.close)
+        layout.addWidget(btn_cancelar)
+        
+        dialog.exec()
+    
+    def abrir_servidor(self, parent_dialog):
+        """Abre a janela do servidor"""
+        parent_dialog.close()
+        try:
+            from network_ui.server_window import ServerWindow
+            self.server_window = ServerWindow(self)
+            self.server_window.show()
+        except Exception as e:
+            QMessageBox.critical(self, "Erro", f"Erro ao abrir servidor: {str(e)}")
+    
+    def abrir_cliente(self, parent_dialog):
+        """Abre a janela do cliente"""
+        parent_dialog.close()
+        try:
+            from network_ui.client_window import ClientWindow
+            self.client_window = ClientWindow(self)
+            self.client_window.show()
+        except Exception as e:
+            QMessageBox.critical(self, "Erro", f"Erro ao abrir cliente: {str(e)}")
+    
+    def executar_auditoria(self):
+        """Executa auditoria: atualiza arquivo com redes e senhas"""
         if not self.networks:
-            QMessageBox.warning(self, "Aviso", "Nenhuma rede para gerar relatório.")
+            QMessageBox.warning(self, "Aviso", "Nenhuma rede para auditar. Execute um scan primeiro.")
             return
         
         try:
-            reporter = ReportGenerator(self.networks, self.audit)
-            report_path = reporter.save_report("txt")
+            # Atualizar arquivo de auditoria
+            arquivo = self.auditoria.atualizar(self.networks)
             
-            QMessageBox.information(
-                self,
-                "Relatório Gerado",
-                f"Relatório salvo em:\n{report_path}"
-            )
+            # Obter resumo
+            resumo = self.auditoria.obter_resumo()
             
-            import subprocess
-            subprocess.Popen(f'explorer /select,"{report_path}"')
+            # Mostrar mensagem de sucesso
+            msg = QMessageBox(self)
+            msg.setWindowTitle("Auditoria Concluída")
+            msg.setIcon(QMessageBox.Information)
+            msg.setText(f"✅ Auditoria realizada com sucesso!\n\n"
+                       f"📁 Arquivo: {arquivo.name}\n"
+                       f"📂 Pasta: {arquivo.parent}\n\n"
+                       f"📊 Resumo:\n"
+                       f"• Total de redes: {resumo['total_redes']}\n"
+                       f"• Com senha: {resumo['com_senha']}\n"
+                       f"• Sem senha: {resumo['sem_senha']}")
+            
+            # Botão para abrir pasta
+            btn_abrir = msg.addButton("Abrir Pasta", QMessageBox.ActionRole)
+            btn_fechar = msg.addButton("Fechar", QMessageBox.RejectRole)
+            
+            msg.exec()
+            
+            if msg.clickedButton() == btn_abrir:
+                self.auditoria.abrir_pasta()
             
         except Exception as e:
-            QMessageBox.critical(self, "Erro", f"Falha ao gerar relatório:\n{str(e)}")
+            QMessageBox.critical(self, "Erro", f"Falha ao executar auditoria:\n{str(e)}")
     
     def set_scanning_state(self, scanning: bool):
+        """Define o estado de escaneamento"""
         if scanning:
             self.btn_refresh.setEnabled(False)
             self.btn_refresh.setText(" Escaneando...")
-            self.btn_refresh.setIcon(qta.icon('fa5s.sync-alt', color='#94a3b8'))
+            self.btn_refresh.setIcon(qta.icon("fa5s.sync-alt", color="#94a3b8"))
             self.spinner.setVisible(True)
             self.spinner.start_animation()
         else:
             self.btn_refresh.setEnabled(True)
             self.btn_refresh.setText(" Atualizar")
-            self.btn_refresh.setIcon(qta.icon('fa5s.sync-alt', color='#ffffff'))
+            self.btn_refresh.setIcon(qta.icon("fa5s.sync-alt", color="#ffffff"))
             self.spinner.setVisible(False)
             self.spinner.stop_animation()
     
     def show_empty_state(self):
+        """Mostra estado vazio"""
         empty_widget = QWidget()
         empty_layout = QVBoxLayout(empty_widget)
         empty_layout.setAlignment(Qt.AlignCenter)
         empty_layout.setSpacing(12)
         
         icon_label = QLabel()
-        icon_label.setPixmap(qta.icon('fa5s.wifi', color='#cbd5e1').pixmap(64, 64))
+        icon_label.setPixmap(qta.icon("fa5s.wifi", color="#cbd5e1").pixmap(64, 64))
         icon_label.setAlignment(Qt.AlignCenter)
         empty_layout.addWidget(icon_label)
         
@@ -643,6 +737,7 @@ class MainWindow(QMainWindow):
         self.networks_layout.insertWidget(0, empty_widget)
     
     def show_error_state(self, error_message):
+        """Mostra estado de erro"""
         self.clear_network_cards()
         
         error_widget = QWidget()
@@ -651,7 +746,7 @@ class MainWindow(QMainWindow):
         error_layout.setSpacing(12)
         
         icon_label = QLabel()
-        icon_label.setPixmap(qta.icon('fa5s.exclamation-triangle', color='#dc2626').pixmap(48, 48))
+        icon_label.setPixmap(qta.icon("fa5s.exclamation-triangle", color="#dc2626").pixmap(48, 48))
         icon_label.setAlignment(Qt.AlignCenter)
         error_layout.addWidget(icon_label)
         
