@@ -10,7 +10,7 @@ from ui.security.models import (
     NetworkSecurityAnalysis, 
     EnvironmentSecurityReport
 )
-from ui.security.widgets import SecurityCard, SecuritySummaryWidget, VulnerabilityBadge
+from ui.security.widgets import SecurityCard, VulnerabilityBadge
 from ui.security.security_analyzer import SecurityAnalyzerUI
 
 __all__ = [
@@ -20,7 +20,6 @@ __all__ = [
     'NetworkSecurityAnalysis',
     'EnvironmentSecurityReport',
     'SecurityCard',
-    'SecuritySummaryWidget',
     'VulnerabilityBadge',
     'SecurityAnalyzerUI'
 ]

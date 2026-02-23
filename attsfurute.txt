@@ -1,0 +1,7 @@
+puxar informações por cabo ethernet.
+melhorar a UI da tela principal.
+implementar o sistema de segurança. (login e senha)
+melhorar sistema de auditoria.
+inserir compatiibilidade com linux.
+criar rede local.
+manifestar roteador.

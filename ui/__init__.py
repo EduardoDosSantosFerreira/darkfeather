@@ -3,19 +3,30 @@ Módulo de interface do usuário para DarkFeather WiFi Analysis
 """
 
 from ui.main_window import MainWindow
-from ui.widgets import WifiCardWidget, NetworkDetailsWidget, LoadingSpinner, FrequencyBadge
+from ui.widgets import WifiCardWidget, LoadingSpinner, FrequencyBadge
+from ui.modern_details_widget import ModernDetailsWidget
+from ui.details_cards import (
+    MetricCard, InfoCard, StatusBadge, 
+    SecurityBadge, FrequencyIndicator, SignalStrengthIndicator
+)
 from ui.theme import UIThemeManager
 from ui.risk_badge import RiskBadge, RiskWidget, SecurityStatusWidget
 
-# Importar SecurityWindow diretamente, não via ui.security
+# Importar SecurityWindow diretamente
 from ui.security.security_window import SecurityWindow
 
 __all__ = [
     'MainWindow',
     'WifiCardWidget',
-    'NetworkDetailsWidget',
+    'ModernDetailsWidget',
     'LoadingSpinner',
     'FrequencyBadge',
+    'MetricCard',
+    'InfoCard',
+    'StatusBadge',
+    'SecurityBadge',
+    'FrequencyIndicator',
+    'SignalStrengthIndicator',
     'UIThemeManager',
     'RiskBadge',
     'RiskWidget',

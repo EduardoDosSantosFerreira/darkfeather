@@ -1,5 +1,5 @@
 """
-Tela independente de análise de segurança - Layout Otimizado
+Tela independente de análise de segurança - Layout Limpo e Moderno
 """
 
 from PySide6.QtWidgets import (
@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QFileDialog, QGridLayout
 )
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QPalette, QColor
 import qtawesome as qta
 import json
 from datetime import datetime
@@ -20,7 +20,7 @@ from ui.risk_badge import RiskBadge
 
 
 class SecuritySummaryCard(QFrame):
-    """Card de resumo compacto"""
+    """Card de resumo compacto e legível - sem bordas"""
     
     def __init__(self, report, parent=None):
         super().__init__(parent)
@@ -30,37 +30,34 @@ class SecuritySummaryCard(QFrame):
     def setup_ui(self):
         self.setStyleSheet("""
             QFrame {
-                background-color: #ffffff;
-                border: 1px solid #e2e8f0;
-                border-radius: 12px;
+                background-color: transparent;
             }
         """)
         
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 12, 16, 12)
-        layout.setSpacing(12)
+        layout.setContentsMargins(0, 0, 0, 16)
+        layout.setSpacing(16)
         
         # Linha de score
         score_row = QHBoxLayout()
-        score_row.setSpacing(8)
         
         score = self.report.health_score
         if score >= 80:
-            color = "#10b981"
+            color = "#059669"
             status = "Bom"
         elif score >= 50:
-            color = "#f59e0b"
+            color = "#d97706"
             status = "Atenção"
         else:
-            color = "#ef4444"
+            color = "#dc2626"
             status = "Crítico"
         
         score_label = QLabel(f"{score}%")
-        score_label.setStyleSheet(f"color: {color}; font-size: 20px; font-weight: 700;")
+        score_label.setStyleSheet(f"color: {color}; font-size: 36px; font-weight: 700;")
         score_row.addWidget(score_label)
         
         status_label = QLabel(status)
-        status_label.setStyleSheet(f"color: {color}; font-size: 13px; font-weight: 500;")
+        status_label.setStyleSheet(f"color: {color}; font-size: 18px; font-weight: 600; margin-left: 8px;")
         score_row.addWidget(status_label)
         
         score_row.addStretch()
@@ -68,27 +65,37 @@ class SecuritySummaryCard(QFrame):
         
         # Métricas em linha
         metrics_row = QHBoxLayout()
-        metrics_row.setSpacing(16)
+        metrics_row.setSpacing(24)
         
         metrics = [
-            ("Total", self.report.total_networks, "#64748b"),
-            ("Críticas", self.report.critical_count, "#ef4444"),
-            ("Altas", self.report.high_count, "#f97316"),
-            ("Médias", self.report.medium_count, "#f59e0b")
+            ("Total", self.report.total_networks, "#3b82f6"),
+            ("Críticas", self.report.critical_count, "#dc2626"),
+            ("Altas", self.report.high_count, "#ea580c"),
+            ("Médias", self.report.medium_count, "#d97706"),
         ]
         
         for label, value, color in metrics:
-            item = QLabel(f"<b>{value}</b> {label}")
-            item.setTextFormat(Qt.RichText)
-            item.setStyleSheet(f"color: {color}; font-size: 12px;")
-            metrics_row.addWidget(item)
+            container = QWidget()
+            container_layout = QVBoxLayout(container)
+            container_layout.setContentsMargins(0, 0, 0, 0)
+            container_layout.setSpacing(2)
+            
+            value_label = QLabel(str(value))
+            value_label.setStyleSheet(f"color: {color}; font-size: 28px; font-weight: 700;")
+            container_layout.addWidget(value_label)
+            
+            name_label = QLabel(label)
+            name_label.setStyleSheet("color: #475569; font-size: 13px; font-weight: 500;")
+            container_layout.addWidget(name_label)
+            
+            metrics_row.addWidget(container)
         
         metrics_row.addStretch()
         layout.addLayout(metrics_row)
 
 
 class SecurityDetailsPanel(QFrame):
-    """Painel de detalhes simplificado"""
+    """Painel de detalhes - limpo e sem bordas"""
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -98,23 +105,37 @@ class SecurityDetailsPanel(QFrame):
     def setup_ui(self):
         self.setStyleSheet("""
             QFrame {
-                background-color: #ffffff;
-                border: 1px solid #e2e8f0;
+                background-color: #f8fafc;
                 border-radius: 12px;
+            }
+            .section-title {
+                font-size: 15px;
+                font-weight: 600;
+                color: #1e293b;
+                padding: 8px 0;
+            }
+            .info-label {
+                color: #64748b;
+                font-size: 13px;
+            }
+            .info-value {
+                color: #1e293b;
+                font-size: 13px;
+                font-weight: 500;
             }
         """)
         
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(12)
+        self.main_layout.setContentsMargins(20, 20, 20, 20)
+        self.main_layout.setSpacing(16)
         
         self.show_placeholder()
     
     def show_placeholder(self):
         self.clear_content()
         
-        placeholder = QLabel("Selecione uma rede")
-        placeholder.setStyleSheet("color: #94a3b8; font-size: 13px; padding: 24px;")
+        placeholder = QLabel("Selecione uma rede para ver detalhes")
+        placeholder.setStyleSheet("color: #94a3b8; font-size: 14px; padding: 40px;")
         placeholder.setAlignment(Qt.AlignCenter)
         self.main_layout.addWidget(placeholder)
     
@@ -123,29 +144,30 @@ class SecurityDetailsPanel(QFrame):
         self.clear_content()
         
         # Cabeçalho
-        header = QHBoxLayout()
+        header = QWidget()
+        header_layout = QHBoxLayout(header)
+        header_layout.setContentsMargins(0, 0, 0, 0)
         
         name_label = QLabel(analysis.ssid)
         name_font = QFont()
-        name_font.setPointSize(15)
+        name_font.setPointSize(16)
         name_font.setWeight(QFont.Weight.DemiBold)
         name_label.setFont(name_font)
         name_label.setStyleSheet("color: #0f172a;")
-        header.addWidget(name_label)
-        
-        header.addStretch()
+        name_label.setWordWrap(True)
+        header_layout.addWidget(name_label, 1)
         
         risk_badge = RiskBadge(analysis.risk_level.value, analysis.risk_score)
-        header.addWidget(risk_badge)
+        header_layout.addWidget(risk_badge)
         
-        self.main_layout.addLayout(header)
+        self.main_layout.addWidget(header)
         
-        # Info linha única
-        info = QLabel(f"{analysis.auth} • {analysis.encryption}")
-        info.setStyleSheet("color: #475569; font-size: 12px; padding: 4px 0;")
-        self.main_layout.addWidget(info)
+        # Info de segurança
+        security_info = QLabel(f"{analysis.auth}  •  {analysis.encryption}")
+        security_info.setStyleSheet("color: #475569; font-size: 13px; padding: 4px 0;")
+        self.main_layout.addWidget(security_info)
         
-        # Separador
+        # Separador sutil
         sep = QFrame()
         sep.setFrameShape(QFrame.HLine)
         sep.setStyleSheet("background-color: #e2e8f0; max-height: 1px;")
@@ -153,20 +175,45 @@ class SecurityDetailsPanel(QFrame):
         
         # Vulnerabilidades
         if analysis.vulnerabilities:
-            vuln_count = QLabel(f"Vulnerabilidades ({len(analysis.vulnerabilities)})")
-            vuln_count.setStyleSheet("color: #991b1b; font-size: 12px; font-weight: 600;")
-            self.main_layout.addWidget(vuln_count)
+            vuln_title = QLabel(f"Vulnerabilidades ({len(analysis.vulnerabilities)})")
+            vuln_title.setStyleSheet("font-size: 14px; font-weight: 600; color: #991b1b; margin-bottom: 8px;")
+            self.main_layout.addWidget(vuln_title)
             
-            for vuln in analysis.vulnerabilities[:2]:
-                v = QLabel(f"• {vuln.type.value}")
-                v.setStyleSheet("color: #334155; font-size: 11px; padding-left: 8px;")
-                self.main_layout.addWidget(v)
+            for vuln in analysis.vulnerabilities[:3]:
+                v_frame = QFrame()
+                v_frame.setStyleSheet("""
+                    QFrame {
+                        background-color: #fef2f2;
+                        border-radius: 8px;
+                        margin: 4px 0;
+                    }
+                """)
+                
+                v_layout = QVBoxLayout(v_frame)
+                v_layout.setContentsMargins(12, 8, 12, 8)
+                v_layout.setSpacing(4)
+                
+                v_type = QLabel(vuln.type.value)
+                v_type.setStyleSheet("color: #991b1b; font-size: 12px; font-weight: 600;")
+                v_layout.addWidget(v_type)
+                
+                v_desc = QLabel(vuln.description[:60] + "..." if len(vuln.description) > 60 else vuln.description)
+                v_desc.setStyleSheet("color: #475569; font-size: 11px;")
+                v_desc.setWordWrap(True)
+                v_layout.addWidget(v_desc)
+                
+                self.main_layout.addWidget(v_frame)
+            
+            if len(analysis.vulnerabilities) > 3:
+                more = QLabel(f"... e mais {len(analysis.vulnerabilities) - 3}")
+                more.setStyleSheet("color: #64748b; font-size: 11px; font-style: italic;")
+                more.setAlignment(Qt.AlignCenter)
+                self.main_layout.addWidget(more)
         else:
-            safe = QLabel("✅ Nenhuma vulnerabilidade")
-            safe.setStyleSheet("color: #10b981; font-size: 12px;")
+            safe = QLabel("✅ Nenhuma vulnerabilidade detectada")
+            safe.setStyleSheet("color: #10b981; font-size: 13px; padding: 16px;")
+            safe.setAlignment(Qt.AlignCenter)
             self.main_layout.addWidget(safe)
-        
-        self.main_layout.addStretch()
     
     def clear_content(self):
         while self.main_layout.count():
@@ -177,7 +224,7 @@ class SecurityDetailsPanel(QFrame):
 
 class SecurityWindow(QDialog):
     """
-    Tela de análise de segurança - Layout otimizado
+    Tela de análise de segurança - Layout limpo e moderno
     """
     
     def __init__(self, networks, parent=None):
@@ -191,15 +238,15 @@ class SecurityWindow(QDialog):
     
     def setup_ui(self):
         self.setWindowTitle("DarkFeather - Análise de Segurança")
-        self.setMinimumSize(1000, 700)
+        self.setMinimumSize(1100, 750)
         self.setModal(False)
         
         self.setPalette(self.theme.get_palette())
         
         # Layout principal
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(20, 20, 20, 20)
-        main_layout.setSpacing(12)
+        main_layout.setContentsMargins(24, 24, 24, 24)
+        main_layout.setSpacing(20)
         
         # Header
         self.setup_header(main_layout)
@@ -212,7 +259,7 @@ class SecurityWindow(QDialog):
         
         # Content area
         content_layout = QHBoxLayout()
-        content_layout.setSpacing(12)
+        content_layout.setSpacing(20)
         
         self.setup_networks_panel(content_layout)
         self.setup_details_panel(content_layout)
@@ -224,11 +271,10 @@ class SecurityWindow(QDialog):
     
     def setup_header(self, parent_layout):
         header = QHBoxLayout()
-        header.setContentsMargins(0, 0, 0, 4)
         
         title = QLabel("Análise de Segurança")
         title_font = QFont()
-        title_font.setPointSize(18)
+        title_font.setPointSize(20)
         title_font.setWeight(QFont.Weight.Medium)
         title.setFont(title_font)
         title.setStyleSheet("color: #0f172a;")
@@ -238,17 +284,17 @@ class SecurityWindow(QDialog):
         
         self.btn_refresh = QPushButton(" Reanalisar")
         self.btn_refresh.setIcon(qta.icon('fa5s.sync-alt', color='#ffffff'))
-        self.btn_refresh.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_refresh.setFixedSize(120, 32)
+        self.btn_refresh.setCursor(Qt.PointingHandCursor)
+        self.btn_refresh.setFixedSize(130, 36)
         self.btn_refresh.setStyleSheet("""
             QPushButton {
                 background-color: #2563eb;
                 color: white;
                 border: none;
-                border-radius: 6px;
+                border-radius: 8px;
                 font-weight: 600;
-                font-size: 12px;
-                padding: 0 12px;
+                font-size: 13px;
+                padding: 0 16px;
             }
             QPushButton:hover {
                 background-color: #1d4ed8;
@@ -260,38 +306,69 @@ class SecurityWindow(QDialog):
         parent_layout.addLayout(header)
     
     def setup_networks_panel(self, parent_layout):
-        panel = QWidget()
-        panel.setMinimumWidth(300)
-        panel.setMaximumWidth(380)
+        panel = QFrame()
+        panel.setMinimumWidth(350)
+        panel.setMaximumWidth(450)
+        panel.setStyleSheet("""
+            QFrame {
+                background-color: #f8fafc;
+                border-radius: 12px;
+            }
+        """)
         
         panel_layout = QVBoxLayout(panel)
-        panel_layout.setContentsMargins(0, 0, 0, 0)
-        panel_layout.setSpacing(8)
+        panel_layout.setContentsMargins(16, 16, 16, 16)
+        panel_layout.setSpacing(12)
         
-        # Header
-        header = QHBoxLayout()
+        # Header do painel
+        header_widget = QWidget()
+        header_layout = QHBoxLayout(header_widget)
+        header_layout.setContentsMargins(0, 0, 0, 0)
         
-        title = QLabel("Redes")
-        title.setStyleSheet("font-size: 14px; font-weight: 600; color: #0f172a;")
-        header.addWidget(title)
+        title = QLabel("Redes Analisadas")
+        title.setStyleSheet("font-size: 15px; font-weight: 600; color: #0f172a;")
+        header_layout.addWidget(title)
+        
+        header_layout.addStretch()
         
         self.network_count = QLabel("0")
-        self.network_count.setStyleSheet("color: #64748b; font-size: 11px; background-color: #f1f5f9; padding: 2px 8px; border-radius: 10px;")
-        header.addWidget(self.network_count)
-        header.addStretch()
+        self.network_count.setStyleSheet("""
+            color: #64748b;
+            font-size: 12px;
+            background-color: #e2e8f0;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-weight: 500;
+        """)
+        header_layout.addWidget(self.network_count)
         
-        panel_layout.addLayout(header)
+        panel_layout.addWidget(header_widget)
         
-        # Scroll
+        # Scroll area
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.NoFrame)
-        scroll.setStyleSheet("QScrollBar:vertical { width: 4px; }")
+        scroll.setStyleSheet("""
+            QScrollArea {
+                background-color: transparent;
+                border: none;
+            }
+            QScrollBar:vertical {
+                width: 6px;
+                background: #e2e8f0;
+                border-radius: 3px;
+            }
+            QScrollBar::handle:vertical {
+                background: #94a3b8;
+                border-radius: 3px;
+                min-height: 40px;
+            }
+        """)
         
         scroll_content = QWidget()
         self.cards_layout = QVBoxLayout(scroll_content)
-        self.cards_layout.setContentsMargins(0, 0, 2, 0)
-        self.cards_layout.setSpacing(4)
+        self.cards_layout.setContentsMargins(0, 0, 4, 0)
+        self.cards_layout.setSpacing(8)
         self.cards_layout.addStretch()
         
         scroll.setWidget(scroll_content)
@@ -308,18 +385,19 @@ class SecurityWindow(QDialog):
         footer.setContentsMargins(0, 8, 0, 0)
         footer.setSpacing(8)
         
-        self.btn_report = QPushButton(" Relatório")
+        self.btn_report = QPushButton(" Gerar Relatório")
         self.btn_report.setIcon(qta.icon('fa5s.file-alt', color='#ffffff'))
-        self.btn_report.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_report.setFixedSize(110, 32)
+        self.btn_report.setCursor(Qt.PointingHandCursor)
+        self.btn_report.setFixedSize(150, 36)
         self.btn_report.setStyleSheet("""
             QPushButton {
                 background-color: #2563eb;
                 color: white;
                 border: none;
-                border-radius: 6px;
+                border-radius: 8px;
                 font-weight: 600;
-                font-size: 12px;
+                font-size: 13px;
+                padding: 0 16px;
             }
             QPushButton:hover {
                 background-color: #1d4ed8;
@@ -328,21 +406,22 @@ class SecurityWindow(QDialog):
         self.btn_report.clicked.connect(self.generate_full_report)
         footer.addWidget(self.btn_report)
         
-        self.btn_export = QPushButton(" CSV")
+        self.btn_export = QPushButton(" Exportar CSV")
         self.btn_export.setIcon(qta.icon('fa5s.file-csv', color='#334155'))
-        self.btn_export.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_export.setFixedSize(80, 32)
+        self.btn_export.setCursor(Qt.PointingHandCursor)
+        self.btn_export.setFixedSize(130, 36)
         self.btn_export.setStyleSheet("""
             QPushButton {
-                background-color: #ffffff;
+                background-color: #f1f5f9;
                 color: #334155;
-                border: 1px solid #e2e8f0;
-                border-radius: 6px;
+                border: none;
+                border-radius: 8px;
                 font-weight: 500;
-                font-size: 12px;
+                font-size: 13px;
+                padding: 0 16px;
             }
             QPushButton:hover {
-                background-color: #f8fafc;
+                background-color: #e2e8f0;
             }
         """)
         self.btn_export.clicked.connect(self.export_vulnerabilities)
@@ -351,16 +430,16 @@ class SecurityWindow(QDialog):
         footer.addStretch()
         
         self.btn_close = QPushButton(" Fechar")
-        self.btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_close.setFixedSize(80, 32)
+        self.btn_close.setCursor(Qt.PointingHandCursor)
+        self.btn_close.setFixedSize(100, 36)
         self.btn_close.setStyleSheet("""
             QPushButton {
                 background-color: #f1f5f9;
                 color: #334155;
                 border: none;
-                border-radius: 6px;
+                border-radius: 8px;
                 font-weight: 500;
-                font-size: 12px;
+                font-size: 13px;
             }
             QPushButton:hover {
                 background-color: #e2e8f0;
@@ -425,21 +504,23 @@ class SecurityWindow(QDialog):
                     "timestamp": datetime.now().isoformat(),
                     "summary": {
                         "health_score": self.report.health_score,
+                        "health_status": self.report.health_status,
                         "total_networks": self.report.total_networks,
                         "critical": self.report.critical_count,
                         "high": self.report.high_count,
-                        "medium": self.report.medium_count
+                        "medium": self.report.medium_count,
+                        "open_networks": self.report.open_networks
                     },
                     "networks": [n.to_dict() for n in self.report.networks_analysis]
                 }
                 
                 with open(filename, 'w', encoding='utf-8') as f:
-                    json.dump(report_data, f, indent=2)
+                    json.dump(report_data, f, indent=2, ensure_ascii=False)
                 
-                QMessageBox.information(self, "Sucesso", f"Relatório salvo")
+                QMessageBox.information(self, "Sucesso", "Relatório salvo com sucesso!")
                 
             except Exception as e:
-                QMessageBox.critical(self, "Erro", str(e))
+                QMessageBox.critical(self, "Erro", f"Falha ao salvar relatório: {str(e)}")
     
     def export_vulnerabilities(self):
         if not self.report:
@@ -449,7 +530,7 @@ class SecurityWindow(QDialog):
         
         filename, _ = QFileDialog.getSaveFileName(
             self,
-            "Exportar",
+            "Exportar Vulnerabilidades",
             f"vulnerabilities_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
             "CSV Files (*.csv)"
         )
@@ -458,17 +539,18 @@ class SecurityWindow(QDialog):
             try:
                 with open(filename, 'w', newline='', encoding='utf-8') as f:
                     writer = csv.writer(f)
-                    writer.writerow(['Rede', 'Vulnerabilidade', 'Nível'])
+                    writer.writerow(['Rede', 'Vulnerabilidade', 'Nível', 'Recomendação'])
                     
                     for net in self.report.networks_analysis:
                         for vuln in net.vulnerabilities:
                             writer.writerow([
                                 net.ssid,
                                 vuln.type.value,
-                                vuln.risk_level.value
+                                vuln.risk_level.value,
+                                vuln.recommendation
                             ])
                 
-                QMessageBox.information(self, "Sucesso", f"Exportado")
+                QMessageBox.information(self, "Sucesso", "Vulnerabilidades exportadas com sucesso!")
                 
             except Exception as e:
-                QMessageBox.critical(self, "Erro", str(e))
+                QMessageBox.critical(self, "Erro", f"Falha ao exportar: {str(e)}")
