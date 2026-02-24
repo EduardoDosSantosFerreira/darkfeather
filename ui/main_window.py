@@ -192,8 +192,8 @@ class MainWindow(QMainWindow):
         self.btn_hotspot = self.create_modern_button(
             " Hotspot", 
             "fa5s.wifi", 
-            "#7c3aed",
-            "#6d28d9"
+            "#f59e0b",
+            "#d97706"
         )
         self.btn_hotspot.clicked.connect(self.abrir_mobile_hotspot)
         actions_layout.addWidget(self.btn_hotspot)
@@ -203,8 +203,8 @@ class MainWindow(QMainWindow):
         self.btn_rede = self.create_modern_button(
             " Rede Local", 
             "fa5s.network-wired", 
-            "#7c3aed",
-            "#6d28d9"
+            "#06b6d4",
+            "#0891b2"
         )
         self.btn_rede.clicked.connect(self.abrir_rede_local)
         actions_layout.addWidget(self.btn_rede)
