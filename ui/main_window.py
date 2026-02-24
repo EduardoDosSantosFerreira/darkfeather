@@ -1,6 +1,6 @@
 """
 MainWindow principal da aplicação DarkFeather WiFi Analysis
-Design moderno e refinado - COM FEATURE DE REDE LOCAL
+Design moderno e refinado - COM FEATURE DE REDE LOCAL E MOBILE HOTSPOT
 """
 
 from PySide6.QtWidgets import (
@@ -38,6 +38,7 @@ class MainWindow(QMainWindow):
         self.network_cards = []
         self.security_analysis = {}
         self.environment_summary = {}
+        self.hotspot_window = None  # Para rastrear a janela do hotspot
         self.setup_ui()
         self.setup_animations()
         self.setup_connections()
@@ -186,6 +187,17 @@ class MainWindow(QMainWindow):
         )
         self.btn_security.clicked.connect(self.open_security_window)
         actions_layout.addWidget(self.btn_security)
+        
+        # ===== NOVO BOTÃO MOBILE HOTSPOT =====
+        self.btn_hotspot = self.create_modern_button(
+            " Hotspot", 
+            "fa5s.wifi", 
+            "#7c3aed",
+            "#6d28d9"
+        )
+        self.btn_hotspot.clicked.connect(self.abrir_mobile_hotspot)
+        actions_layout.addWidget(self.btn_hotspot)
+        # =====================================
         
         # Botão Rede Local
         self.btn_rede = self.create_modern_button(
@@ -576,6 +588,40 @@ class MainWindow(QMainWindow):
         from ui.security.security_window import SecurityWindow
         self.security_window = SecurityWindow(self.networks, self)
         self.security_window.show()
+    
+    # ===== NOVO MÉTODO PARA MOBILE HOTSPOT =====
+    def abrir_mobile_hotspot(self):
+        """Abre a janela do Mobile Hotspot"""
+        try:
+            from ui.hotspot_window import HotspotWindow
+            
+            # Verificar se já existe uma instância
+            if self.hotspot_window and self.hotspot_window.isVisible():
+                self.hotspot_window.raise_()
+                self.hotspot_window.activateWindow()
+                return
+            
+            # Criar nova janela
+            self.hotspot_window = HotspotWindow(self)
+            self.hotspot_window.closed.connect(self._on_hotspot_closed)
+            self.hotspot_window.show()
+            
+        except ImportError as e:
+            QMessageBox.warning(
+                self, 
+                "Aviso", 
+                f"Biblioteca winrt não instalada. Execute:\npip install winrt\n\nErro: {str(e)}"
+            )
+        except Exception as e:
+            QMessageBox.warning(
+                self, 
+                "Aviso", 
+                f"Não foi possível abrir o Mobile Hotspot:\n{str(e)}"
+            )
+    
+    def _on_hotspot_closed(self):
+        """Callback quando a janela do hotspot é fechada"""
+        self.hotspot_window = None
     
     def abrir_rede_local(self):
         """Abre a janela de rede local - VERSÃO SIMPLIFICADA"""

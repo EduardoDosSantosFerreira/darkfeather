@@ -1,15 +1,15 @@
-"""
-Módulo de interface do usuário para DarkFeather WiFi Analysis
-"""
+# ui/__init__.py - Adicionar HotspotWindow
+
+"""Módulo de interface do usuário para DarkFeather WiFi Analysis"""
 
 from ui.main_window import MainWindow
 from ui.widgets import WifiCardWidget, LoadingSpinner, FrequencyBadge
 from ui.modern_details_widget import ModernDetailsWidget
 from ui.theme import UIThemeManager
 from ui.risk_badge import RiskBadge, RiskWidget, SecurityStatusWidget
-
-# Importar SecurityWindow diretamente
 from ui.security.security_window import SecurityWindow
+from ui.hotspot_window import HotspotWindow  # NOVO
+from ui.hotspot_widget import HotspotWidget    # NOVO
 
 __all__ = [
     'MainWindow',
@@ -21,5 +21,7 @@ __all__ = [
     'RiskBadge',
     'RiskWidget',
     'SecurityStatusWidget',
-    'SecurityWindow'
+    'SecurityWindow',
+    'HotspotWindow',      # NOVO
+    'HotspotWidget'       # NOVO
 ]

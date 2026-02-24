@@ -1,0 +1,81 @@
+# =========================
+# 🔐 ARQUIVOS SENSÍVEIS
+# =========================
+
+# Pasta de auditoria (NUNCA subir chaves ou relatórios)
+keys/
+
+
+# =========================
+# 🐍 PYTHON
+# =========================
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyc.*
+*.pkl
+
+# Ambientes virtuais
+venv/
+.env/
+.venv/
+
+# Arquivos de ambiente
+.env
+.env.local
+
+
+# =========================
+# 🏗 BUILD / EMPACOTAMENTO
+# =========================
+
+build/
+*.spec
+*.egg-info/
+.eggs/
+
+
+# =========================
+# 🧪 TESTES / CACHE
+# =========================
+
+.pytest_cache/
+.cache/
+.coverage
+htmlcov/
+
+
+# =========================
+# 🖥 IDE / EDITOR
+# =========================
+
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+
+# =========================
+# 🖼 ARQUIVOS TEMPORÁRIOS
+# =========================
+
+*.log
+*.tmp
+*.bak
+
+
+# =========================
+# 🪟 WINDOWS
+# =========================
+
+Thumbs.db
+Desktop.ini
+
+
+# =========================
+# 🐧 LINUX
+# =========================
+
+*~
