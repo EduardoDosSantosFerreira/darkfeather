@@ -6,11 +6,23 @@ Versão FINAL - Todas as importações funcionando
 import sys
 import ctypes
 
-# Configurar encoding para Windows
+# Configurar encoding para Windows de forma segura
 if sys.platform == 'win32':
     import io
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='ignore')
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='ignore')
+    
+    # Verificar se stdout existe e tem buffer
+    if sys.stdout is not None and hasattr(sys.stdout, 'buffer'):
+        try:
+            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='ignore')
+        except Exception:
+            pass  # Se falhar, mantém o original
+    
+    # Verificar se stderr existe e tem buffer
+    if sys.stderr is not None and hasattr(sys.stderr, 'buffer'):
+        try:
+            sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='ignore')
+        except Exception:
+            pass  # Se falhar, mantém o original
 
 print("Iniciando DarkFeather...")
 
