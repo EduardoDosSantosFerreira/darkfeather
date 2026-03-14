@@ -1,5 +1,6 @@
 """
 Gerenciador de temas para a aplicação DarkFeather WiFi Analysis
+TEMA ORIGINAL
 """
 
 from PySide6.QtGui import QPalette, QColor
@@ -8,31 +9,32 @@ from PySide6.QtCore import Qt
 
 class UIThemeManager:
     """
-    Gerencia o tema e estilos da interface
+    Gerencia o tema e estilos da interface - TEMA ORIGINAL
     """
     
     def __init__(self):
         self.colors = {
-            'bg_primary': '#f3f4f6',
-            'bg_secondary': '#ffffff',
-            'bg_tertiary': '#f8fafc',
-            'text_primary': '#0f172a',
-            'text_secondary': '#334155',
-            'text_tertiary': '#64748b',
-            'text_muted': '#94a3b8',
-            'border_light': '#e2e8f0',
-            'border_medium': '#cbd5e1',
-            'primary': '#2563eb',
-            'primary_hover': '#1d4ed8',
-            'primary_pressed': '#1e40af',
-            'success': '#10b981',
-            'warning': '#f59e0b',
-            'danger': '#ef4444',
-            'info': '#3b82f6'
+            'bg_primary': '#f8fafc',      # Fundo principal cinza claro
+            'bg_secondary': '#ffffff',      # Fundo branco
+            'bg_tertiary': '#f1f5f9',       # Fundo cinza para cards
+            'text_primary': '#0f172a',      # Texto principal preto
+            'text_secondary': '#334155',     # Texto secundário cinza escuro
+            'text_tertiary': '#64748b',      # Texto terciário cinza
+            'text_muted': '#94a3b8',         # Texto muted
+            'border_light': '#e2e8f0',       # Borda clara
+            'border_medium': '#cbd5e1',      # Borda média
+            'primary': '#2563eb',            # Azul principal
+            'primary_hover': '#1d4ed8',      # Azul hover
+            'primary_pressed': '#1e40af',    # Azul pressed
+            'success': '#10b981',             # Verde
+            'warning': '#f59e0b',             # Laranja
+            'danger': '#ef4444',               # Vermelho
+            'info': '#3b82f6',                  # Azul info
+            'purple': '#8b5cf6',                # Roxo
+            'pink': '#ec4899'                    # Rosa
         }
     
     def get_main_window_style(self) -> str:
-        """Retorna o estilo da janela principal"""
         return f"""
             QMainWindow {{
                 background-color: {self.colors['bg_primary']};
@@ -43,7 +45,6 @@ class UIThemeManager:
         """
     
     def get_button_style(self, button_type: str = "default") -> str:
-        """Retorna estilo para botões"""
         if button_type == "primary":
             return f"""
                 QPushButton {{
@@ -58,18 +59,11 @@ class UIThemeManager:
                 QPushButton:hover {{
                     background-color: {self.colors['primary_hover']};
                 }}
-                QPushButton:pressed {{
-                    background-color: {self.colors['primary_pressed']};
-                }}
-                QPushButton:disabled {{
-                    background-color: {self.colors['border_light']};
-                    color: {self.colors['text_muted']};
-                }}
             """
-        elif button_type == "secondary":
+        else:
             return f"""
                 QPushButton {{
-                    background-color: {self.colors['bg_secondary']};
+                    background-color: transparent;
                     color: {self.colors['text_secondary']};
                     border: 1px solid {self.colors['border_light']};
                     border-radius: 8px;
@@ -79,35 +73,11 @@ class UIThemeManager:
                 }}
                 QPushButton:hover {{
                     background-color: {self.colors['bg_tertiary']};
-                    border-color: {self.colors['border_medium']};
-                }}
-                QPushButton:pressed {{
-                    background-color: {self.colors['border_light']};
-                }}
-            """
-        else:
-            return f"""
-                QPushButton {{
-                    background-color: transparent;
-                    color: {self.colors['text_secondary']};
-                    border: none;
-                    border-radius: 8px;
-                    font-weight: 500;
-                    font-size: 12px;
-                    padding: 8px 16px;
-                }}
-                QPushButton:hover {{
-                    background-color: {self.colors['bg_tertiary']};
-                }}
-                QPushButton:pressed {{
-                    background-color: {self.colors['border_light']};
                 }}
             """
     
     def get_palette(self) -> QPalette:
-        """Retorna a paleta de cores da aplicação"""
         palette = QPalette()
-        
         palette.setColor(QPalette.ColorRole.Window, QColor(self.colors['bg_primary']))
         palette.setColor(QPalette.ColorRole.WindowText, QColor(self.colors['text_primary']))
         palette.setColor(QPalette.ColorRole.Base, QColor(self.colors['bg_secondary']))
@@ -118,5 +88,4 @@ class UIThemeManager:
         palette.setColor(QPalette.ColorRole.BrightText, Qt.GlobalColor.white)
         palette.setColor(QPalette.ColorRole.Highlight, QColor(self.colors['primary']))
         palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)
-        
         return palette

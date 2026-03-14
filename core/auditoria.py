@@ -80,7 +80,7 @@ class Auditoria:
         elif network.password_hex:
             return f"[HEX] {network.password_hex}"
         else:
-            return "******** (não disponível no perfil)"
+            return "******** (N/A no perfil)"
     
     def atualizar(self, networks: List[WifiNetwork]) -> Path:
         """
@@ -109,7 +109,7 @@ class Auditoria:
                 senha_anterior = redes_registradas[ssid]["senha"]
                 
                 # Se senha mudou, atualizar com nova data
-                if senha_anterior != senha and senha != "******** (não disponível no perfil)":
+                if senha_anterior != senha and senha != "******** (N/A no perfil)":
                     redes_registradas[ssid] = {
                         "senha": senha,
                         "data": f"{data_atual} (atualizada)"

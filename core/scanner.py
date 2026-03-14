@@ -185,10 +185,10 @@ class WifiScannerWorker(QRunnable):
     def get_interface_detailed(self) -> Dict:
         """Obtém informações detalhadas da interface"""
         info = {
-            "name": "Não disponível",
-            "mac": "Não disponível",
-            "guid": "Não disponível",
-            "status": "Não disponível"
+            "name": "N/A",
+            "mac": "N/A",
+            "guid": "N/A",
+            "status": "N/A"
         }
         
         try:

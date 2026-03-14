@@ -15,7 +15,7 @@ def network_to_dict(network: WifiNetwork) -> Dict[str, Any]:
         "Criptografia": network.encryption,
         "Chave (ASCII)": network.password if network.password else "********",
         "Chave (HEX)": network.password_hex if network.password_hex else "",
-        "Última Conexão": network.last_connection if network.last_connection else "Não disponível"
+        "Última Conexão": network.last_connection if network.last_connection else "N/A"
     }
 
 

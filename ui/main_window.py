@@ -1,20 +1,23 @@
 """
 MainWindow principal da aplicação DarkFeather WiFi Analysis
-Design moderno e refinado - COM FEATURE DE REDE LOCAL E MOBILE HOTSPOT
+DESIGN ATUALIZADO - Ícone maior e mais presente
 """
 
+import os
+import sys
+from pathlib import Path
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLabel, QScrollArea, QFrame, QApplication,
     QMessageBox, QSizePolicy, QGraphicsDropShadowEffect,
-    QDialog
+    QSplitter
 )
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, Slot
-from PySide6.QtGui import QFont, QColor, QPalette
+from PySide6.QtGui import QFont, QColor, QPalette, QPixmap, QIcon
 import qtawesome as qta
 
 from ui.widgets import WifiCardWidget, LoadingSpinner
-from ui.modern_details_widget import ModernDetailsWidget as NetworkDetailsWidget
+from ui.modern_details_widget import ModernDetailsWidget
 from ui.theme import UIThemeManager
 from core.scanner import WifiScanner, WifiNetwork
 from core.auditoria import Auditoria
@@ -24,7 +27,7 @@ from core.security import SecurityAnalyzer
 
 class MainWindow(QMainWindow):
     """
-    Janela principal da aplicação - Design Moderno
+    Janela principal da aplicação - Design Moderno com ícone personalizado
     """
     
     def __init__(self):
@@ -38,34 +41,81 @@ class MainWindow(QMainWindow):
         self.network_cards = []
         self.security_analysis = {}
         self.environment_summary = {}
-        self.hotspot_window = None  # Para rastrear a janela do hotspot
+        self.hotspot_window = None
         self.setup_ui()
         self.setup_animations()
         self.setup_connections()
         
-        # Registrar inicialização
         self.audit_logger.log_app_started()
-        
-        # Configurar para iniciar maximizado
         self.showMaximized()
-        
-        # Escanear automaticamente após inicialização
         QTimer.singleShot(100, self.start_scan)
+    
+    def resource_path(self, relative_path):
+        """Obtém o caminho absoluto para recursos, funcionando para dev e para PyInstaller"""
+        try:
+            # PyInstaller cria uma pasta temporária e armazena o caminho em _MEIPASS
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = Path(__file__).parent.parent
+        
+        return os.path.join(base_path, relative_path)
+    
+    def get_icon_path(self, filename: str) -> str:
+        """
+        Retorna o caminho absoluto para o ícone, funcionando tanto em desenvolvimento
+        quanto quando compilado para .exe com PyInstaller
+        """
+        # Lista de possíveis localizações do ícone
+        possible_paths = []
+        
+        if getattr(sys, 'frozen', False):
+            # Se estiver rodando como .exe
+            base_paths = [
+                Path(sys.executable).parent,  # Pasta do executável
+                Path(sys.executable).parent / "assets",  # Pasta assets junto ao executável
+                Path(sys.executable).parent / "icons",  # Pasta icons junto ao executável
+            ]
+            for base in base_paths:
+                possible_paths.append(base / filename)
+        else:
+            # Se estiver rodando em desenvolvimento
+            base_paths = [
+                Path(__file__).parent.parent,  # Raiz do projeto
+                Path(__file__).parent.parent / "assets",
+                Path(__file__).parent.parent / "icons",
+                Path.cwd(),
+            ]
+            for base in base_paths:
+                possible_paths.append(base / filename)
+        
+        # Verificar cada caminho possível
+        for path in possible_paths:
+            if path.exists():
+                print(f"Ícone encontrado: {path}")
+                return str(path)
+        
+        # Se não encontrar, tentar caminho absoluto
+        if os.path.exists(filename):
+            return filename
+        
+        print(f"Ícone não encontrado: {filename}")
+        return None
     
     def setup_ui(self):
         """Configura a interface do usuário"""
         self.setWindowTitle("DarkFeather WiFi Analysis")
         self.setMinimumSize(1300, 800)
         
+        # Configurar ícone da janela
+        self.setup_window_icon()
+        
         self.setPalette(self.theme.get_palette())
         self.setStyleSheet(self.get_global_style())
         
-        # Widget central
         central_widget = QWidget()
         central_widget.setObjectName("centralWidget")
         self.setCentralWidget(central_widget)
         
-        # Layout principal
         self.main_layout = QVBoxLayout(central_widget)
         self.main_layout.setContentsMargins(24, 24, 24, 24)
         self.main_layout.setSpacing(20)
@@ -74,6 +124,22 @@ class MainWindow(QMainWindow):
         self.setup_metrics_bar()
         self.setup_content_area()
         self.setup_status_bar()
+    
+    def setup_window_icon(self):
+        """Configura o ícone personalizado da janela"""
+        # Tentar carregar o ícone em diferentes formatos
+        icon_formats = ['darkfeather.ico', 'darkfeather.png', 'DarkFeather.ico', 'DarkFeather.png']
+        
+        for icon_file in icon_formats:
+            icon_path = self.get_icon_path(icon_file)
+            if icon_path and os.path.exists(icon_path):
+                self.setWindowIcon(QIcon(icon_path))
+                print(f"Ícone da janela carregado: {icon_path}")
+                return
+        
+        # Se não encontrar, usar ícone padrão do qtawesome
+        print("Ícone personalizado não encontrado, usando ícone padrão")
+        self.setWindowIcon(qta.icon('fa5s.wifi', color='#2563eb'))
     
     def get_global_style(self) -> str:
         """Estilos globais modernos"""
@@ -111,110 +177,132 @@ class MainWindow(QMainWindow):
         """
     
     def setup_header(self):
-        """Configura o cabeçalho com botões de ação"""
+        """Configura o cabeçalho com botões de ação e ícone personalizado MAIOR"""
         header_widget = QWidget()
         header_widget.setObjectName("headerWidget")
-        header_widget.setFixedHeight(70)
+        header_widget.setFixedHeight(90)  # Aumentado para dar mais espaço
         header_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         
         header_layout = QHBoxLayout(header_widget)
-        header_layout.setContentsMargins(0, 0, 0, 0)
-        header_layout.setSpacing(16)
+        header_layout.setContentsMargins(0, 0, 20, 0)  # Mais margem direita
+        header_layout.setSpacing(24)  # Mais espaçamento entre elementos
         
-        # Logo e título
+        # ===== LOGO E TÍTULO COM ÍCONE GRANDE =====
         logo_container = QWidget()
         logo_layout = QHBoxLayout(logo_container)
         logo_layout.setContentsMargins(0, 0, 0, 0)
-        logo_layout.setSpacing(12)
+        logo_layout.setSpacing(16)  # Mais espaço entre ícone e texto
         
-        # Ícone com fundo
+        # Ícone personalizado do DarkFeather - MAIOR E MAIS DESTAQUE
         icon_frame = QFrame()
-        icon_frame.setFixedSize(44, 44)
+        icon_frame.setFixedSize(60, 60)  # Aumentado de 44x44 para 60x60
         icon_frame.setStyleSheet("""
             QFrame {
-                background-color: #2563eb;
-                border-radius: 12px;
+                background-color: transparent;
                 border: none;
             }
         """)
         icon_layout = QVBoxLayout(icon_frame)
         icon_layout.setAlignment(Qt.AlignCenter)
+        icon_layout.setContentsMargins(0, 0, 0, 0)
         
+        # Label para o ícone
         icon_label = QLabel()
-        icon_label.setPixmap(qta.icon("fa5s.wifi", color="#ffffff").pixmap(24, 24))
+        icon_label.setAlignment(Qt.AlignCenter)
+        
+        # Tentar carregar o ícone personalizado
+        icon_loaded = False
+        
+        # Verificar PNG primeiro (melhor qualidade)
+        icon_path = self.get_icon_path('darkfeather.png')
+        if icon_path and os.path.exists(icon_path):
+            # Carregar imagem PNG redimensionada para 48x48
+            pixmap = QPixmap(icon_path)
+            if not pixmap.isNull():
+                scaled_pixmap = pixmap.scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                icon_label.setPixmap(scaled_pixmap)
+                icon_loaded = True
+                print(f"Ícone PNG carregado: {icon_path}")
+        
+        # Se não conseguiu carregar PNG, tentar ICO
+        if not icon_loaded:
+            icon_path = self.get_icon_path('darkfeather.ico')
+            if icon_path and os.path.exists(icon_path):
+                pixmap = QPixmap(icon_path)
+                if not pixmap.isNull():
+                    scaled_pixmap = pixmap.scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                    icon_label.setPixmap(scaled_pixmap)
+                    icon_loaded = True
+                    print(f"Ícone ICO carregado: {icon_path}")
+        
+        # Fallback para ícone do qtawesome
+        if not icon_loaded:
+            icon_label.setPixmap(qta.icon("fa5s.wifi", color="#2563eb").pixmap(40, 40))
+            print("Usando ícone de fallback do qtawesome")
+        
         icon_layout.addWidget(icon_label)
         logo_layout.addWidget(icon_frame)
         
-        # Título e versão
+        # Container do título (texto à direita do ícone)
         title_container = QWidget()
         title_layout = QVBoxLayout(title_container)
         title_layout.setContentsMargins(0, 0, 0, 0)
-        title_layout.setSpacing(2)
+        title_layout.setSpacing(4)
         
+        # Título principal
         title_label = QLabel("DarkFeather")
         title_font = QFont()
-        title_font.setPointSize(20)
+        title_font.setPointSize(22)  # Aumentado de 20 para 22
         title_font.setWeight(QFont.Weight.Bold)
         title_label.setFont(title_font)
         title_label.setStyleSheet("color: #0f172a;")
         title_layout.addWidget(title_label)
         
+        # Subtítulo
         subtitle_label = QLabel("WiFi Security Analysis")
         subtitle_font = QFont()
-        subtitle_font.setPointSize(12)
+        subtitle_font.setPointSize(13)  # Aumentado de 12 para 13
         subtitle_font.setWeight(QFont.Weight.Normal)
         subtitle_label.setFont(subtitle_font)
         subtitle_label.setStyleSheet("color: #64748b;")
         title_layout.addWidget(subtitle_label)
         
         logo_layout.addWidget(title_container)
-        header_layout.addWidget(logo_container)
+        logo_layout.addStretch()
+        header_layout.addWidget(logo_container, 1)  # stretch factor 1
         
-        header_layout.addStretch()
+        # Espaçador para empurrar os botões para a direita
+        header_layout.addStretch(2)
         
-        # Container de ações
+        # ===== CONTAINER DE AÇÕES (BOTÕES) =====
         actions_container = QWidget()
         actions_layout = QHBoxLayout(actions_container)
         actions_layout.setContentsMargins(0, 0, 0, 0)
-        actions_layout.setSpacing(8)
+        actions_layout.setSpacing(12)  # Mais espaçamento entre botões
         
         # Botão Segurança
         self.btn_security = self.create_modern_button(
             " Segurança", 
             "fa5s.shield-alt", 
-            "#8b5cf6",
-            "#7c3aed"
+            "#8b5cf6"
         )
         self.btn_security.clicked.connect(self.open_security_window)
         actions_layout.addWidget(self.btn_security)
         
-        # ===== NOVO BOTÃO MOBILE HOTSPOT =====
+        # Botão MOBILE HOTSPOT
         self.btn_hotspot = self.create_modern_button(
             " Hotspot", 
             "fa5s.wifi", 
-            "#f59e0b",
-            "#d97706"
+            "#f59e0b"
         )
         self.btn_hotspot.clicked.connect(self.abrir_mobile_hotspot)
         actions_layout.addWidget(self.btn_hotspot)
-        # =====================================
-        
-        # Botão Rede Local
-        self.btn_rede = self.create_modern_button(
-            " Rede Local", 
-            "fa5s.network-wired", 
-            "#06b6d4",
-            "#0891b2"
-        )
-        self.btn_rede.clicked.connect(self.abrir_rede_local)
-        actions_layout.addWidget(self.btn_rede)
         
         # Botão atualizar
         self.btn_refresh = self.create_modern_button(
             " Atualizar", 
             "fa5s.sync-alt", 
-            "#2563eb",
-            "#1d4ed8"
+            "#2563eb"
         )
         actions_layout.addWidget(self.btn_refresh)
         
@@ -222,8 +310,7 @@ class MainWindow(QMainWindow):
         self.btn_auditoria = self.create_modern_button(
             " Auditoria", 
             "fa5s.clipboard-list",
-            "#059669",
-            "#047857"
+            "#059669"
         )
         self.btn_auditoria.clicked.connect(self.executar_auditoria)
         actions_layout.addWidget(self.btn_auditoria)
@@ -237,12 +324,17 @@ class MainWindow(QMainWindow):
         header_layout.addWidget(actions_container)
         self.main_layout.addWidget(header_widget)
     
-    def create_modern_button(self, text: str, icon: str, color: str, hover_color: str) -> QPushButton:
+    def create_modern_button(self, text: str, icon: str, color: str) -> QPushButton:
         """Cria botão moderno com efeitos"""
         btn = QPushButton(text)
-        btn.setIcon(qta.icon(icon, color="#ffffff"))
+        try:
+            btn.setIcon(qta.icon(icon, color="#ffffff"))
+        except Exception as e:
+            print(f"Erro ao carregar ícone {icon}: {e}")
+            btn.setIcon(qta.icon("fa5s.square", color="#ffffff"))
         btn.setCursor(Qt.PointingHandCursor)
-        btn.setFixedSize(120, 40)
+        btn.setFixedSize(130, 44)  # Botões um pouco maiores (eram 120x40)
+        
         btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: {color};
@@ -254,14 +346,19 @@ class MainWindow(QMainWindow):
                 padding: 0 16px;
             }}
             QPushButton:hover {{
-                background-color: {hover_color};
+                background-color: {color};
+                border: 2px solid #ffffff;
+            }}
+            QPushButton:pressed {{
+                background-color: {color};
+                opacity: 0.8;
             }}
             QPushButton:disabled {{
                 background-color: #cbd5e1;
+                color: #94a3b8;
             }}
         """)
         
-        # Sombra suave
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(10)
         shadow.setColor(QColor(0, 0, 0, 10))
@@ -317,7 +414,6 @@ class MainWindow(QMainWindow):
         title_label.setWordWrap(True)
         layout.addWidget(title_label, 1)
         
-        # Armazenar referência para o label de valor
         card.value_label = value_label
         
         return card
@@ -327,25 +423,37 @@ class MainWindow(QMainWindow):
         content_widget = QWidget()
         content_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
-        content_layout = QHBoxLayout(content_widget)
-        content_layout.setContentsMargins(0, 0, 0, 0)
-        content_layout.setSpacing(16)
+        # Usar QSplitter para permitir redimensionamento
+        self.content_splitter = QSplitter(Qt.Horizontal)
+        self.content_splitter.setHandleWidth(1)
+        self.content_splitter.setStyleSheet("""
+            QSplitter::handle {
+                background-color: #e2e8f0;
+                width: 1px;
+            }
+        """)
         
         # Painel esquerdo - Lista de redes
-        self.setup_networks_panel(content_layout)
+        self.setup_networks_panel()
         
         # Painel direito - Detalhes da rede
-        self.setup_details_panel(content_layout)
+        self.setup_details_panel()
+        
+        # Definir proporções: 45% redes, 55% detalhes
+        self.content_splitter.setSizes([450, 550])
+        
+        # Layout do conteúdo
+        content_layout = QHBoxLayout(content_widget)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.addWidget(self.content_splitter)
         
         self.main_layout.addWidget(content_widget, stretch=1)
     
-    def setup_networks_panel(self, parent_layout):
+    def setup_networks_panel(self):
         """Configura o painel esquerdo com lista de redes"""
         panel = QFrame()
         panel.setObjectName("networksPanel")
         panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        panel.setMinimumWidth(320)
-        panel.setMaximumWidth(380)
         
         panel_layout = QVBoxLayout(panel)
         panel_layout.setContentsMargins(16, 16, 16, 16)
@@ -392,16 +500,15 @@ class MainWindow(QMainWindow):
         self.scroll_area.setWidget(scroll_content)
         panel_layout.addWidget(self.scroll_area)
         
-        parent_layout.addWidget(panel, stretch=35)
+        self.content_splitter.addWidget(panel)
     
-    def setup_details_panel(self, parent_layout):
+    def setup_details_panel(self):
         """Configura o painel direito com detalhes"""
-        self.details_widget = NetworkDetailsWidget()
+        self.details_widget = ModernDetailsWidget()
         self.details_widget.setVisible(False)
         self.details_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.details_widget.setMinimumWidth(500)
         
-        parent_layout.addWidget(self.details_widget, stretch=65)
+        self.content_splitter.addWidget(self.details_widget)
     
     def setup_status_bar(self):
         """Configura a barra de status"""
@@ -434,7 +541,6 @@ class MainWindow(QMainWindow):
         """Configura conexões de sinais e slots"""
         self.btn_refresh.clicked.connect(self.start_scan)
         
-        # Conectar sinais do scanner
         self.scanner.scan_finished.connect(self.on_scan_finished)
         self.scanner.scan_error.connect(self.on_scan_error)
         self.scanner.scan_progress.connect(self.on_scan_progress)
@@ -452,15 +558,12 @@ class MainWindow(QMainWindow):
         self.networks = networks
         self.audit_logger.log_scan_finished(len(networks))
         
-        # Analisar segurança
         self.security_analysis = {}
         for net in networks:
             self.security_analysis[net.ssid] = SecurityAnalyzer.analyze_network(net)
         
-        # Análise do ambiente
         self.environment_summary = SecurityAnalyzer.analyze_environment(networks)
         
-        # Atualizar interface
         self.update_metrics()
         self.update_networks_display()
         self.network_counter.setText(str(len(networks)))
@@ -479,19 +582,15 @@ class MainWindow(QMainWindow):
     def update_metrics(self):
         """Atualiza cards de métricas"""
         if self.environment_summary:
-            # Atualizar card de saúde
             score = self.environment_summary.get('health_score', 0)
             self.health_card.value_label.setText(f"{score}%")
             
-            # Atualizar card de redes
             total = self.environment_summary.get('total_networks', 0)
             self.networks_card.value_label.setText(str(total))
             
-            # Atualizar card de risco alto
             high = self.environment_summary.get('high_risk', 0)
             self.high_risk_card.value_label.setText(str(high))
             
-            # Atualizar card de risco médio
             medium = self.environment_summary.get('medium_risk', 0)
             self.medium_risk_card.value_label.setText(str(medium))
     
@@ -589,19 +688,16 @@ class MainWindow(QMainWindow):
         self.security_window = SecurityWindow(self.networks, self)
         self.security_window.show()
     
-    # ===== NOVO MÉTODO PARA MOBILE HOTSPOT =====
     def abrir_mobile_hotspot(self):
         """Abre a janela do Mobile Hotspot"""
         try:
             from ui.hotspot_window import HotspotWindow
             
-            # Verificar se já existe uma instância
             if self.hotspot_window and self.hotspot_window.isVisible():
                 self.hotspot_window.raise_()
                 self.hotspot_window.activateWindow()
                 return
             
-            # Criar nova janela
             self.hotspot_window = HotspotWindow(self)
             self.hotspot_window.closed.connect(self._on_hotspot_closed)
             self.hotspot_window.show()
@@ -623,89 +719,6 @@ class MainWindow(QMainWindow):
         """Callback quando a janela do hotspot é fechada"""
         self.hotspot_window = None
     
-    def abrir_rede_local(self):
-        """Abre a janela de rede local - VERSÃO SIMPLIFICADA"""
-        dialog = QDialog(self)
-        dialog.setWindowTitle("DarkFeather - Rede Local")
-        dialog.setFixedSize(300, 220)
-        dialog.setStyleSheet("""
-            QDialog {
-                background-color: white;
-                border-radius: 16px;
-            }
-            QPushButton {
-                font-size: 14px;
-                padding: 12px;
-                border-radius: 8px;
-                font-weight: 600;
-                margin: 5px 15px;
-            }
-            QLabel {
-                font-size: 18px;
-                font-weight: bold;
-                color: #0f172a;
-                padding: 10px;
-            }
-        """)
-        
-        layout = QVBoxLayout(dialog)
-        layout.setSpacing(10)
-        
-        # Título
-        title = QLabel("🌐 Rede Local")
-        title.setAlignment(Qt.AlignCenter)
-        layout.addWidget(title)
-        
-        # Descrição
-        desc = QLabel("Inicie um servidor ou conecte-se como cliente")
-        desc.setStyleSheet("font-size: 12px; color: #64748b; font-weight: normal;")
-        desc.setAlignment(Qt.AlignCenter)
-        desc.setWordWrap(True)
-        layout.addWidget(desc)
-        
-        # Botão Servidor
-        btn_servidor = QPushButton(" Iniciar Servidor")
-        btn_servidor.setIcon(qta.icon('fa5s.server', color='white'))
-        btn_servidor.setStyleSheet("background-color: #059669; color: white;")
-        btn_servidor.clicked.connect(lambda: self.abrir_servidor(dialog))
-        layout.addWidget(btn_servidor)
-        
-        # Botão Cliente
-        btn_cliente = QPushButton(" Conectar como Cliente")
-        btn_cliente.setIcon(qta.icon('fa5s.desktop', color='white'))
-        btn_cliente.setStyleSheet("background-color: #2563eb; color: white;")
-        btn_cliente.clicked.connect(lambda: self.abrir_cliente(dialog))
-        layout.addWidget(btn_cliente)
-        
-        # Botão Cancelar
-        btn_cancelar = QPushButton(" Cancelar")
-        btn_cancelar.setIcon(qta.icon('fa5s.times', color='#334155'))
-        btn_cancelar.setStyleSheet("background-color: #f1f5f9; color: #334155;")
-        btn_cancelar.clicked.connect(dialog.close)
-        layout.addWidget(btn_cancelar)
-        
-        dialog.exec()
-    
-    def abrir_servidor(self, parent_dialog):
-        """Abre a janela do servidor"""
-        parent_dialog.close()
-        try:
-            from network_ui.server_window import ServerWindow
-            self.server_window = ServerWindow(self)
-            self.server_window.show()
-        except Exception as e:
-            QMessageBox.critical(self, "Erro", f"Erro ao abrir servidor: {str(e)}")
-    
-    def abrir_cliente(self, parent_dialog):
-        """Abre a janela do cliente"""
-        parent_dialog.close()
-        try:
-            from network_ui.client_window import ClientWindow
-            self.client_window = ClientWindow(self)
-            self.client_window.show()
-        except Exception as e:
-            QMessageBox.critical(self, "Erro", f"Erro ao abrir cliente: {str(e)}")
-    
     def executar_auditoria(self):
         """Executa auditoria: atualiza arquivo com redes e senhas"""
         if not self.networks:
@@ -713,13 +726,9 @@ class MainWindow(QMainWindow):
             return
         
         try:
-            # Atualizar arquivo de auditoria
             arquivo = self.auditoria.atualizar(self.networks)
-            
-            # Obter resumo
             resumo = self.auditoria.obter_resumo()
             
-            # Mostrar mensagem de sucesso
             msg = QMessageBox(self)
             msg.setWindowTitle("Auditoria Concluída")
             msg.setIcon(QMessageBox.Information)
@@ -731,7 +740,6 @@ class MainWindow(QMainWindow):
                        f"• Com senha: {resumo['com_senha']}\n"
                        f"• Sem senha: {resumo['sem_senha']}")
             
-            # Botão para abrir pasta
             btn_abrir = msg.addButton("Abrir Pasta", QMessageBox.ActionRole)
             btn_fechar = msg.addButton("Fechar", QMessageBox.RejectRole)
             

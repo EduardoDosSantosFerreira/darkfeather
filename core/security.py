@@ -95,7 +95,7 @@ class SecurityAnalyzer:
             recommendations.append("Ative PMF (Protected Management Frames) se disponível")
         
         # 5. Análise de última conexão
-        if network.last_connection and network.last_connection != "Não disponível":
+        if network.last_connection and network.last_connection != "N/A":
             try:
                 for fmt in ["%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"]:
                     try:

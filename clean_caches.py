@@ -42,7 +42,9 @@ def clean_project(root: Path):
         elif path.is_file() and path.name in CACHE_FILE_NAMES:
             remove_path(path)
 
-        elif path.is_dir() and any(path.name.endswith(suffix) for suffix in CACHE_SUFFIXES):
+        elif path.is_dir() and any(
+            path.name.endswith(suffix) for suffix in CACHE_SUFFIXES
+        ):
             remove_path(path)
 
 

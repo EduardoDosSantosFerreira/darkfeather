@@ -97,7 +97,7 @@ class InfoCard(QFrame):
         
         # Items
         for key, value in self.items:
-            if value and value != "N/A" and value != "Não disponível":
+            if value and value != "N/A" and value != "N/A":
                 row = QHBoxLayout()
                 row.setContentsMargins(0, 4, 0, 4)
                 

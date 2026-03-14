@@ -7,20 +7,24 @@ import sys
 import ctypes
 
 # Configurar encoding para Windows de forma segura
-if sys.platform == 'win32':
+if sys.platform == "win32":
     import io
-    
+
     # Verificar se stdout existe e tem buffer
-    if sys.stdout is not None and hasattr(sys.stdout, 'buffer'):
+    if sys.stdout is not None and hasattr(sys.stdout, "buffer"):
         try:
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='ignore')
+            sys.stdout = io.TextIOWrapper(
+                sys.stdout.buffer, encoding="utf-8", errors="ignore"
+            )
         except Exception:
             pass  # Se falhar, mantém o original
-    
+
     # Verificar se stderr existe e tem buffer
-    if sys.stderr is not None and hasattr(sys.stderr, 'buffer'):
+    if sys.stderr is not None and hasattr(sys.stderr, "buffer"):
         try:
-            sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='ignore')
+            sys.stderr = io.TextIOWrapper(
+                sys.stderr.buffer, encoding="utf-8", errors="ignore"
+            )
         except Exception:
             pass  # Se falhar, mantém o original
 
@@ -35,7 +39,7 @@ from ui.main_window import MainWindow
 
 def main():
     """Ponto de entrada principal"""
-    
+
     # Verificar privilégios de administrador
     if not is_admin():
         print("Solicitando privilégios de administrador...")
@@ -43,20 +47,20 @@ def main():
             None, "runas", sys.executable, " ".join(sys.argv), None, 1
         )
         sys.exit()
-    
+
     # Criar aplicação
     app = QApplication(sys.argv)
     app.setApplicationName("DarkFeather WiFi Analysis")
     app.setApplicationVersion("2.0.0")
-    
+
     # Configurar fonte
     font = QFont("Segoe UI", 10)
     app.setFont(font)
-    
+
     # Criar e mostrar janela principal
     window = MainWindow()
     window.show()
-    
+
     print("Interface iniciada!")
     sys.exit(app.exec())
 
@@ -67,5 +71,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Erro: {e}")
         import traceback
+
         traceback.print_exc()
         input("Pressione Enter para sair...")

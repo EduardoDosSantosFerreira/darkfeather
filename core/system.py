@@ -316,13 +316,13 @@ def get_adapter_info() -> Dict[str, str]:
     Obtém informações detalhadas do adaptador de rede
     """
     info = {
-        "name": "Não disponível",
-        "description": "Não disponível",
-        "mac": "Não disponível",
-        "guid": "Não disponível",
-        "status": "Não disponível",
-        "driver": "Não disponível",
-        "vendor": "Não disponível"
+        "name": "N/A",
+        "description": "N/A",
+        "mac": "N/A",
+        "guid": "N/A",
+        "status": "N/A",
+        "driver": "N/A",
+        "vendor": "N/A"
     }
     
     try:

@@ -29,6 +29,7 @@ from core.frequency import RealFrequencyDetector
 class ModernDetailsWidget(QFrame):
     """
     Widget de detalhes da rede - Layout otimizado para maior largura
+    BACKGROUND BRANCO CORRIGIDO
     """
 
     def __init__(self):
@@ -42,12 +43,13 @@ class ModernDetailsWidget(QFrame):
         self.apply_style()
 
     def apply_style(self):
-        """Aplica estilos limpos e com bom contraste"""
+        """Aplica estilos - BACKGROUND BRANCO"""
         self.setStyleSheet(
             """
             ModernDetailsWidget {
                 background-color: #ffffff;
                 border-radius: 16px;
+                border: 1px solid #e2e8f0;
             }
             QScrollArea {
                 border: none;
@@ -63,6 +65,9 @@ class ModernDetailsWidget(QFrame):
                 border-radius: 3px;
                 min-height: 40px;
             }
+            QScrollBar::handle:vertical:hover {
+                background: #64748b;
+            }
             .section-title {
                 font-size: 15px;
                 font-weight: 700;
@@ -71,36 +76,19 @@ class ModernDetailsWidget(QFrame):
                 margin-bottom: 8px;
             }
             .info-label {
-                color: #000000;
+                color: #64748b;
                 font-size: 13px;
                 font-weight: 500;
             }
             .info-value {
-                color: #000000;
+                color: #0f172a;
                 font-size: 13px;
                 font-weight: 600;
             }
-            .metric-container {
-                background-color: #f8fafc;
-                border-radius: 10px;
-                padding: 8px;
-                min-width: 80px;
+            QLabel {
+                color: #0f172a;
             }
-            .metric-value {
-                font-size: 24px;
-                font-weight: 700;
-            }
-            .metric-unit {
-                font-size: 12px;
-                margin-left: 2px;
-            }
-            .metric-label {
-                color: #000000;
-                font-size: 12px;
-                font-weight: 600;
-                margin-top: 2px;
-            }
-        """
+            """
         )
 
         # Sombra muito suave
@@ -123,7 +111,7 @@ class ModernDetailsWidget(QFrame):
         title_font.setPointSize(18)
         title_font.setWeight(QFont.Weight.DemiBold)
         title.setFont(title_font)
-        title.setStyleSheet("color: #000000;")
+        title.setStyleSheet("color: #0f172a;")
         main_layout.addWidget(title)
 
         # Área de scroll
@@ -133,6 +121,7 @@ class ModernDetailsWidget(QFrame):
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.scroll_content = QWidget()
+        self.scroll_content.setStyleSheet("background-color: #ffffff;")
         self.scroll_layout = QVBoxLayout(self.scroll_content)
         self.scroll_layout.setContentsMargins(0, 0, 4, 0)
         self.scroll_layout.setSpacing(16)
@@ -147,6 +136,7 @@ class ModernDetailsWidget(QFrame):
         self.clear_content()
 
         container = QWidget()
+        container.setStyleSheet("background-color: #ffffff;")
         layout = QVBoxLayout(container)
         layout.setAlignment(Qt.AlignCenter)
         layout.setSpacing(12)
@@ -157,7 +147,7 @@ class ModernDetailsWidget(QFrame):
         layout.addWidget(icon)
 
         text = QLabel("Selecione uma rede para ver detalhes")
-        text.setStyleSheet("color: #000000; font-size: 14px; font-weight: 500;")
+        text.setStyleSheet("color: #64748b; font-size: 14px; font-weight: 500;")
         text.setAlignment(Qt.AlignCenter)
         layout.addWidget(text)
 
@@ -197,6 +187,7 @@ class ModernDetailsWidget(QFrame):
     def add_network_header(self):
         """Adiciona cabeçalho com nome e qualidade"""
         header = QWidget()
+        header.setStyleSheet("background-color: #ffffff;")
         layout = QHBoxLayout(header)
         layout.setContentsMargins(0, 0, 0, 8)
 
@@ -206,7 +197,7 @@ class ModernDetailsWidget(QFrame):
         name_font.setPointSize(20)
         name_font.setWeight(QFont.Weight.Bold)
         name_label.setFont(name_font)
-        name_label.setStyleSheet("color: #000000;")
+        name_label.setStyleSheet("color: #0f172a;")
         layout.addWidget(name_label)
 
         layout.addStretch()
@@ -240,6 +231,7 @@ class ModernDetailsWidget(QFrame):
     def add_metrics_row(self):
         """Adiciona linha de métricas com cards visíveis"""
         metrics_widget = QWidget()
+        metrics_widget.setStyleSheet("background-color: #ffffff;")
         
         layout = QHBoxLayout(metrics_widget)
         layout.setContentsMargins(0, 0, 0, 12)
@@ -280,7 +272,7 @@ class ModernDetailsWidget(QFrame):
         self.scroll_layout.addWidget(metrics_widget)
 
     def create_metric_card(self, label: str, value: str, unit: str, color: str) -> QFrame:
-        """Cria um card de métrica com fundo e texto bem visíveis"""
+        """Cria um card de métrica com fundo claro"""
         card = QFrame()
         card.setMinimumWidth(90)
         card.setMaximumWidth(110)
@@ -315,7 +307,7 @@ class ModernDetailsWidget(QFrame):
 
         # Label da métrica
         label_label = QLabel(label)
-        label_label.setStyleSheet("color: #000000; font-size: 12px; font-weight: 600;")
+        label_label.setStyleSheet("color: #0f172a; font-size: 12px; font-weight: 600;")
         layout.addWidget(label_label)
 
         return card
@@ -323,12 +315,13 @@ class ModernDetailsWidget(QFrame):
     def add_identification_section(self):
         """Adiciona seção de identificação"""
         section = QWidget()
+        section.setStyleSheet("background-color: #ffffff;")
         layout = QVBoxLayout(section)
         layout.setSpacing(8)
 
         # Título
         title = QLabel("Identificação")
-        title.setProperty("class", "section-title")
+        title.setStyleSheet("font-size: 15px; font-weight: 700; color: #0f172a;")
         layout.addWidget(title)
 
         # Grid 2 colunas
@@ -345,14 +338,14 @@ class ModernDetailsWidget(QFrame):
 
         for row, col, key, value in items:
             key_label = QLabel(key)
-            key_label.setProperty("class", "info-label")
+            key_label.setStyleSheet("color: #64748b; font-size: 13px; font-weight: 500;")
             grid.addWidget(key_label, row, col * 2, Qt.AlignRight)
 
             display_value = (
-                value if value != "N/A" and value != "Não disponível" else "—"
+                value if value != "N/A" and value != "N/A" else "—"
             )
             value_label = QLabel(display_value)
-            value_label.setProperty("class", "info-value")
+            value_label.setStyleSheet("color: #0f172a; font-size: 13px; font-weight: 600;")
             value_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
             if value != "N/A" and len(value) > 25:
                 value_label.setToolTip(value)
@@ -364,12 +357,13 @@ class ModernDetailsWidget(QFrame):
     def add_radio_section(self):
         """Adiciona seção de rádio"""
         section = QWidget()
+        section.setStyleSheet("background-color: #ffffff;")
         layout = QVBoxLayout(section)
         layout.setSpacing(8)
 
         # Título
         title = QLabel("Rádio e Sinal")
-        title.setProperty("class", "section-title")
+        title.setStyleSheet("font-size: 15px; font-weight: 700; color: #0f172a;")
         layout.addWidget(title)
 
         # Grid 2 colunas
@@ -379,7 +373,7 @@ class ModernDetailsWidget(QFrame):
 
         freq = self.real_data.get("frequency_mhz", "N/A")
         freq_display = (
-            f"{freq} MHz" if freq != "N/A" and freq != "Não disponível" else "—"
+            f"{freq} MHz" if freq != "N/A" and freq != "N/A" else "—"
         )
 
         items = [
@@ -390,7 +384,7 @@ class ModernDetailsWidget(QFrame):
                 "PHY:",
                 (
                     self.real_data.get("phy_type", "N/A")
-                    if self.real_data.get("phy_type") != "Não disponível"
+                    if self.real_data.get("phy_type") != "N/A"
                     else "—"
                 ),
             ),
@@ -400,7 +394,7 @@ class ModernDetailsWidget(QFrame):
                 "Velocidade:",
                 (
                     self.real_data.get("link_speed", "N/A")
-                    if self.real_data.get("link_speed") != "Não disponível"
+                    if self.real_data.get("link_speed") != "N/A"
                     else "—"
                 ),
             ),
@@ -414,14 +408,14 @@ class ModernDetailsWidget(QFrame):
 
         for row, col, key, value in items:
             key_label = QLabel(key)
-            key_label.setProperty("class", "info-label")
+            key_label.setStyleSheet("color: #64748b; font-size: 13px; font-weight: 500;")
             grid.addWidget(key_label, row, col * 2, Qt.AlignRight)
 
             display_value = (
-                value if value != "N/A" and value != "Não disponível" else "—"
+                value if value != "N/A" and value != "N/A" else "—"
             )
             value_label = QLabel(display_value)
-            value_label.setProperty("class", "info-value")
+            value_label.setStyleSheet("color: #0f172a; font-size: 13px; font-weight: 600;")
             value_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
             grid.addWidget(value_label, row, col * 2 + 1, Qt.AlignLeft)
 
@@ -431,12 +425,13 @@ class ModernDetailsWidget(QFrame):
     def add_ip_section(self):
         """Adiciona seção IP"""
         section = QWidget()
+        section.setStyleSheet("background-color: #ffffff;")
         layout = QVBoxLayout(section)
         layout.setSpacing(8)
 
         # Título
         title = QLabel("Configuração IP")
-        title.setProperty("class", "section-title")
+        title.setStyleSheet("font-size: 15px; font-weight: 700; color: #0f172a;")
         layout.addWidget(title)
 
         # Grid 2 colunas
@@ -459,17 +454,17 @@ class ModernDetailsWidget(QFrame):
 
         for row, col, key, value in items:
             key_label = QLabel(key)
-            key_label.setProperty("class", "info-label")
+            key_label.setStyleSheet("color: #64748b; font-size: 13px; font-weight: 500;")
             grid.addWidget(key_label, row, col * 2, Qt.AlignRight)
 
             display_value = (
-                value if value != "N/A" and value != "Não disponível" else "—"
+                value if value != "N/A" and value != "N/A" else "—"
             )
             if len(display_value) > 20:
                 display_value = display_value[:18] + "…"
 
             value_label = QLabel(display_value)
-            value_label.setProperty("class", "info-value")
+            value_label.setStyleSheet("color: #0f172a; font-size: 13px; font-weight: 600;")
             value_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
             if value != "N/A" and len(value) > 20:
                 value_label.setToolTip(value)
@@ -481,12 +476,13 @@ class ModernDetailsWidget(QFrame):
     def add_security_section(self):
         """Adiciona seção de segurança"""
         section = QWidget()
+        section.setStyleSheet("background-color: #ffffff;")
         layout = QVBoxLayout(section)
         layout.setSpacing(8)
 
         # Título
         title = QLabel("Segurança")
-        title.setProperty("class", "section-title")
+        title.setStyleSheet("font-size: 15px; font-weight: 700; color: #0f172a;")
         layout.addWidget(title)
 
         # Grid 2 colunas
@@ -500,23 +496,23 @@ class ModernDetailsWidget(QFrame):
         ]
 
         row = 1
-        if self.real_data.get("akm") and self.real_data.get("akm") != "Não disponível":
+        if self.real_data.get("akm") and self.real_data.get("akm") != "N/A":
             items.append((row, 0, "AKM:", self.real_data.get("akm")))
             row += 1
 
-        if self.real_data.get("pmf") and self.real_data.get("pmf") != "Não disponível":
+        if self.real_data.get("pmf") and self.real_data.get("pmf") != "N/A":
             items.append((row, 0, "PMF:", self.real_data.get("pmf")))
 
         for row, col, key, value in items:
             key_label = QLabel(key)
-            key_label.setProperty("class", "info-label")
+            key_label.setStyleSheet("color: #64748b; font-size: 13px; font-weight: 500;")
             grid.addWidget(key_label, row, col * 2, Qt.AlignRight)
 
             display_value = (
-                value if value != "N/A" and value != "Não disponível" else "—"
+                value if value != "N/A" and value != "N/A" else "—"
             )
             value_label = QLabel(display_value)
-            value_label.setProperty("class", "info-value")
+            value_label.setStyleSheet("color: #0f172a; font-size: 13px; font-weight: 600;")
             value_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
             grid.addWidget(value_label, row, col * 2 + 1, Qt.AlignLeft)
 
@@ -552,7 +548,7 @@ class ModernDetailsWidget(QFrame):
         title_font.setPointSize(15)
         title_font.setWeight(QFont.Weight.Medium)
         title.setFont(title_font)
-        title.setStyleSheet("color: #000000;")
+        title.setStyleSheet("color: #0f172a;")
         layout.addWidget(title)
 
         # Linha da senha
@@ -561,7 +557,7 @@ class ModernDetailsWidget(QFrame):
 
         # Label "Senha"
         pass_label = QLabel("Senha:")
-        pass_label.setStyleSheet("color: #000000; font-size: 13px; font-weight: 600;")
+        pass_label.setStyleSheet("color: #0f172a; font-size: 13px; font-weight: 600;")
         pass_label.setFixedWidth(60)
         password_row.addWidget(pass_label)
 
@@ -569,7 +565,7 @@ class ModernDetailsWidget(QFrame):
         self.password_value = QLabel("********")
         self.password_value.setStyleSheet(
             """
-            color: #000000;
+            color: #0f172a;
             font-size: 13px;
             font-weight: 500;
             font-family: monospace;
@@ -632,7 +628,7 @@ class ModernDetailsWidget(QFrame):
 
             hex_label = QLabel("HEX:")
             hex_label.setStyleSheet(
-                "color: #000000; font-size: 13px; font-weight: 600;"
+                "color: #0f172a; font-size: 13px; font-weight: 600;"
             )
             hex_label.setFixedWidth(60)
             hex_row.addWidget(hex_label)
@@ -657,7 +653,7 @@ class ModernDetailsWidget(QFrame):
 
         self.scroll_layout.addWidget(section)
 
-    # Métodos utilitários
+    # Métodos utilitários (mantidos iguais)
     def get_rssi_color(self, rssi: str) -> str:
         try:
             val = int(rssi)
@@ -693,7 +689,7 @@ class ModernDetailsWidget(QFrame):
         return "—"
 
     def format_channel_width(self, width) -> str:
-        if width and width != "N/A" and width != "Não disponível":
+        if width and width != "N/A" and width != "N/A":
             return f"{width} MHz"
         return "—"
 
@@ -754,10 +750,10 @@ class ModernDetailsWidget(QFrame):
 
     def get_interface_info(self) -> Dict:
         data = {
-            "interface_name": "Não disponível",
-            "interface_mac": "Não disponível",
-            "interface_status": "Não disponível",
-            "interface_guid": "Não disponível",
+            "interface_name": "N/A",
+            "interface_mac": "N/A",
+            "interface_status": "N/A",
+            "interface_guid": "N/A",
         }
         try:
             result = subprocess.run(
@@ -801,15 +797,15 @@ class ModernDetailsWidget(QFrame):
 
     def get_connection_info(self) -> Dict:
         data = {
-            "bssid": "Não disponível",
-            "channel": "Não disponível",
-            "frequency_mhz": "Não disponível",
-            "band": "Não disponível",
-            "rssi_dbm": "Não disponível",
-            "signal_percent": "Não disponível",
-            "link_speed": "Não disponível",
-            "phy_type": "Não disponível",
-            "channel_width": "Não disponível",
+            "bssid": "N/A",
+            "channel": "N/A",
+            "frequency_mhz": "N/A",
+            "band": "N/A",
+            "rssi_dbm": "N/A",
+            "signal_percent": "N/A",
+            "link_speed": "N/A",
+            "phy_type": "N/A",
+            "channel_width": "N/A",
         }
         if not self.network:
             return data
@@ -912,12 +908,12 @@ class ModernDetailsWidget(QFrame):
 
     def get_ip_info(self) -> Dict:
         data = {
-            "ipv4": "Não disponível",
-            "ipv6": "Não disponível",
-            "subnet_mask": "Não disponível",
-            "gateway": "Não disponível",
-            "dns_servers": "Não disponível",
-            "dhcp_enabled": "Não disponível",
+            "ipv4": "N/A",
+            "ipv6": "N/A",
+            "subnet_mask": "N/A",
+            "gateway": "N/A",
+            "dns_servers": "N/A",
+            "dhcp_enabled": "N/A",
         }
         try:
             result = subprocess.run(
@@ -986,10 +982,10 @@ class ModernDetailsWidget(QFrame):
 
     def get_security_info(self) -> Dict:
         data = {
-            "akm": "Não disponível",
-            "pmf": "Não disponível",
-            "wps": "Não disponível",
-            "hidden": "Não disponível",
+            "akm": "N/A",
+            "pmf": "N/A",
+            "wps": "N/A",
+            "hidden": "N/A",
         }
         if not self.network:
             return data
@@ -1040,7 +1036,7 @@ class ModernDetailsWidget(QFrame):
         return data
 
     def get_frequency_info(self) -> Dict:
-        data = {"frequencies": "Não disponível", "channels": "Não disponível"}
+        data = {"frequencies": "N/A", "channels": "N/A"}
         if not self.network:
             return data
         freqs = self.freq_detector.get_network_frequencies(self.network.ssid)

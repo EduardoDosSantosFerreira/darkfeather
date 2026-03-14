@@ -121,7 +121,7 @@ class HotspotWidget(QFrame):
         
         if not self.controller.is_available():
             self.info_label.setText(
-                "⚠️ Controle direto via API não disponível.\n"
+                "⚠️ Controle direto via API N/A.\n"
                 "Use o botão abaixo para abrir as configurações do Windows."
             )
         

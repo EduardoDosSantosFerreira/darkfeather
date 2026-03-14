@@ -23,7 +23,7 @@ class HotspotStatus(Enum):
     STARTING = "Iniciando"
     STOPPING = "Parando"
     ERROR = "Erro"
-    NOT_AVAILABLE = "Não disponível neste sistema"
+    NOT_AVAILABLE = "N/A neste sistema"
     NO_PERMISSION = "Sem permissão"
 
 

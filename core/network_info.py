@@ -22,21 +22,21 @@ class NetworkInfoCollector:
         Obtém informações detalhadas da interface de rede
         """
         info = {
-            "name": "Não disponível",
-            "description": "Não disponível",
-            "mac": "Não disponível",
-            "ipv4": "Não disponível",
-            "ipv6": "Não disponível",
-            "subnet": "Não disponível",
-            "gateway": "Não disponível",
-            "dns": "Não disponível",
-            "dhcp": "Não disponível",
-            "mtu": "Não disponível",
-            "speed": "Não disponível",
-            "bytes_sent": "Não disponível",
-            "bytes_received": "Não disponível",
-            "packets_sent": "Não disponível",
-            "packets_received": "Não disponível"
+            "name": "N/A",
+            "description": "N/A",
+            "mac": "N/A",
+            "ipv4": "N/A",
+            "ipv6": "N/A",
+            "subnet": "N/A",
+            "gateway": "N/A",
+            "dns": "N/A",
+            "dhcp": "N/A",
+            "mtu": "N/A",
+            "speed": "N/A",
+            "bytes_sent": "N/A",
+            "bytes_received": "N/A",
+            "packets_sent": "N/A",
+            "packets_received": "N/A"
         }
         
         try:
@@ -118,16 +118,16 @@ class NetworkInfoCollector:
         Obtém estatísticas da conexão WLAN atual
         """
         stats = {
-            "signal": "Não disponível",
-            "tx_rate": "Não disponível",
-            "rx_rate": "Não disponível",
-            "channel": "Não disponível",
-            "frequency": "Não disponível",
-            "band": "Não disponível",
-            "bssid": "Não disponível",
-            "phy": "Não disponível",
-            "auth": "Não disponível",
-            "cipher": "Não disponível"
+            "signal": "N/A",
+            "tx_rate": "N/A",
+            "rx_rate": "N/A",
+            "channel": "N/A",
+            "frequency": "N/A",
+            "band": "N/A",
+            "bssid": "N/A",
+            "phy": "N/A",
+            "auth": "N/A",
+            "cipher": "N/A"
         }
         
         try:
