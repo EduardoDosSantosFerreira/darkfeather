@@ -1,82 +1,74 @@
-# 🦅 DarkFeather - Wireless Connection PRO
+# DarkFeather - Wireless Connection PRO
 
-DarkFeather é uma ferramenta gráfica desenvolvida em Python com Tkinter para visualizar e extrair informações detalhadas das redes Wi-Fi salvas no sistema Windows.
+DarkFeather is a graphical tool developed in Python with Tkinter to view and extract detailed information from Wi-Fi networks saved on Windows systems.
 
-## 📋 Funcionalidades
+## Features
 
-- Visualização de todas as redes Wi-Fi salvas no Windows.
-- Extração da senha (ASCII e HEX), autenticação, criptografia e tipo de conexão.
-- Identificação do nome do adaptador de rede e seu GUID.
-- Exibição do caminho do arquivo de perfil e data da última modificação.
-- Interface gráfica moderna em modo escuro.
-- Janela de cópia rápida com botão **📋 Copiar** para facilitar o compartilhamento das informações.
-- Botão "🔍 Buscar e Atualizar" para escanear e exibir as redes.
-- Botão "🧹 Resetar UI" para limpar a exibição.
+- View all Wi-Fi networks saved on Windows.
+- Extract password (ASCII and HEX), authentication, encryption, and connection type.
+- Identify the network adapter name and its GUID.
+- Display profile file path and last modification date.
+- Modern dark mode graphical interface.
+- Quick copy window with "Copy" button to facilitate information sharing.
+- "Search and Refresh" button to scan and display networks.
+- "Reset UI" button to clear the display.
 
-## 💻 Requisitos
+## Requirements
 
-- **Sistema Operacional**: Windows
-- **Python**: 3.7 ou superior
-- **Bibliotecas Python**:
-  - `tkinter` (padrão no Python)
+- **Operating System**: Windows
+- **Python**: 3.7 or higher
+- **Python Libraries**:
+  - `tkinter` (standard in Python)
   - `wmi`
 
-Para instalar o `wmi`, execute:
+To install `wmi`, run:
+
 ```bash
 pip install wmi
-````
+```
 
-## 🚀 Como Usar
+## How to Use
 
-1. **Clone o repositório** ou copie os arquivos para sua máquina:
+1. **Clone the repository** or copy the files to your machine:
 
 ```bash
-git clone https://github.com/seu-usuario/darkfeather.git
+git clone https://github.com/your-username/darkfeather.git
 cd darkfeather
 ```
 
-2. **Execute o script principal** como administrador:
+2. **Run the main script** as administrator:
 
 ```bash
 python darkfeather.py
 ```
 
-> O script exige privilégios administrativos para acessar os perfis de rede do sistema (`netsh` e arquivos XML do Windows).
+> The script requires administrative privileges to access system network profiles (`netsh` and Windows XML files).
 
-3. Clique em **🔍 Buscar e Atualizar** para listar todas as redes salvas.
-4. Dê **duplo clique** em qualquer campo para abrir uma janela com botão de copiar.
+3. Click on **Search and Refresh** to list all saved networks.
+4. **Double-click** any field to open a window with a copy button.
 
-## 📂 Estrutura do Projeto
+## Project Structure
 
 ```
 darkfeather/
-├── darkfeather.py         # Script principal com a interface e lógica
-├── README.md              # Este arquivo
+├── darkfeather.py         # Main script with interface and logic
+├── README.md              # This file
 ```
 
-## 🔒 Segurança
+## Security
 
-Esta ferramenta **não invade redes**, apenas exibe dados salvos **localmente no seu próprio sistema**. Ideal para técnicos, profissionais de suporte ou curiosos sobre redes que já foram conectadas.
+This tool does not attack networks; it only displays data saved locally on your own system. Ideal for technicians, support professionals, or those curious about networks they have previously connected to.
 
-## 🧠 Motivação
+## Motivation
 
-Inspirado por ferramentas como *WirelessKeyView*, o **DarkFeather** visa fornecer uma alternativa moderna, open-source, e em português — com visual agradável e controle total das informações.
+Inspired by tools like WirelessKeyView, DarkFeather aims to provide a modern, open-source alternative with a pleasant interface and full control over the information.
 
-## 🐍 Autor
+## Author
 
 **Eduardo dos Santos Ferreira**
-Desenvolvedor Python | Cibersegurança | Sistemas e Automação
+Python Developer | Cybersecurity | Systems and Automation
 [LinkedIn](https://linkedin.com/in/eduardo-dos-santos-ferreira) • GitHub: [@eduardodossantosferreira](https://github.com/eduardodossantosferreira)
 
-## 📜 Licença
+## License
 
-Este projeto está licenciado sob a **MIT License** — veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-```
-
----
-
-Você pode salvar esse conteúdo em um arquivo chamado `README.md` e colocá-lo junto do seu `darkfeather.py`.
-
-Quer que eu gere também uma [versão com imagem e badges do GitHub](f), um [modelo LICENSE MIT](f), ou um [executável `.exe` com ícone e tudo](f)?
-```
+This project is licensed under the MIT License
