@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DarkFeather - Wireless Connection PRO</title>
+  <meta name="description" content="DarkFeather - Professional Wi-Fi network analysis and management tool for Windows. View stored networks, security credentials, and connection details.">
+  <meta name="keywords" content="WiFi, network analysis, security, Windows, wireless, credential management, DarkFeather">
+  <meta name="author" content="Eduardo S Ferreira">
   <link rel="icon" type="image" sizes="50x50" href="./src/assets/img/profile_icons/darkfeather.png">
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
@@ -38,10 +41,10 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
-            <a class="nav-link" href="#features"><i class="fas fa-wifi mr-1"></i> Recursos</a>
+            <a class="nav-link" href="#features"><i class="fas fa-wifi mr-1"></i> Features</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#how-it-works"><i class="fas fa-cogs mr-1"></i> Como Funciona</a>
+            <a class="nav-link" href="#how-it-works"><i class="fas fa-cogs mr-1"></i> How It Works</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#screenshots"><i class="fas fa-image mr-1"></i> Screenshots</a>
@@ -187,6 +190,7 @@
     }
   </style>
 
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script>
     // Navbar scroll effect
     $(window).scroll(function () {
@@ -212,28 +216,28 @@
             <span>DarkFeather</span>
           </h1>
           <p class="hero-subtitle">
-            A ferramenta definitiva para análise profissional de redes Wi-Fi no Windows
+            The ultimate tool for professional Wi-Fi network analysis on Windows
           </p>
           <div class="hero-buttons">
             <a href="dist/darkfeather.exe" class="btn btn-download btn-lg mr-3 mb-3">
-              <i class="fas fa-download mr-2"></i>Baixar Agora
+              <i class="fas fa-download mr-2"></i>Download Now
             </a>
             <a href="#features" class="btn btn-outline-dark btn-lg mb-3">
-              <i class="fas fa-eye mr-2"></i>Ver Demonstração
+              <i class="fas fa-eye mr-2"></i>Live Demo
             </a>
           </div>
           <div class="hero-features">
             <div class="feature-item">
               <i class="fas fa-wifi"></i>
-              <span>Visualização Completa</span>
+              <span>Full Visualization</span>
             </div>
             <div class="feature-item">
               <i class="fas fa-key"></i>
-              <span>Informações de Segurança</span>
+              <span>Security Information</span>
             </div>
             <div class="feature-item">
               <i class="fas fa-shield-alt"></i>
-              <span>Análise Profissional</span>
+              <span>Professional Analysis</span>
             </div>
           </div>
         </div>
@@ -255,7 +259,7 @@
                       <div class="network-name">HomeNetwork_5G</div>
                       <div class="network-details">
                         <span class="security"><i class="fas fa-lock"></i> WPA2-Personal</span>
-                        <span class="signal"><i class="fas fa-signal"></i> Excelente</span>
+                        <span class="signal"><i class="fas fa-signal"></i> Excellent</span>
                       </div>
                     </div>
                     <div class="network-actions">
@@ -272,7 +276,7 @@
                       <div class="network-name">OfficeWiFi</div>
                       <div class="network-details">
                         <span class="security"><i class="fas fa-lock"></i> WPA2-Enterprise</span>
-                        <span class="signal"><i class="fas fa-signal"></i> Bom</span>
+                        <span class="signal"><i class="fas fa-signal"></i> Good</span>
                       </div>
                     </div>
                     <div class="network-actions">
@@ -289,7 +293,7 @@
                       <div class="network-name">CafePublic</div>
                       <div class="network-details">
                         <span class="security"><i class="fas fa-unlock"></i> Open</span>
-                        <span class="signal"><i class="fas fa-signal"></i> Fraco</span>
+                        <span class="signal"><i class="fas fa-signal"></i> Weak</span>
                       </div>
                     </div>
                     <div class="network-actions">
@@ -305,19 +309,19 @@
                     <span class="detail-value">HomeNetwork_5G</span>
                   </div>
                   <div class="detail-row">
-                    <span class="detail-label">Autenticação:</span>
+                    <span class="detail-label">Authentication:</span>
                     <span class="detail-value">WPA2-Personal</span>
                   </div>
                   <div class="detail-row">
-                    <span class="detail-label">Criptografia:</span>
+                    <span class="detail-label">Encryption:</span>
                     <span class="detail-value">AES-CCMP</span>
                   </div>
                   <div class="detail-row">
-                    <span class="detail-label">Última conexão:</span>
+                    <span class="detail-label">Last connection:</span>
                     <span class="detail-value">2023-11-15 14:30</span>
                   </div>
                   <div class="detail-row highlight">
-                    <span class="detail-label">Chave de segurança:</span>
+                    <span class="detail-label">Security key:</span>
                     <span class="detail-value">•••••••• [Hex: 7465737465313233]</span>
                   </div>
                 </div>
@@ -658,10 +662,9 @@
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-8 text-center">
-          <h2 class="section-title mb-5">Recursos Avançados</h2>
+          <h2 class="section-title mb-5">Advanced Features</h2>
           <p class="lead text-muted mb-5">
-            O DarkFeather oferece um conjunto completo de ferramentas para análise profissional de redes Wi-Fi no
-            ambiente Windows.
+            DarkFeather offers a complete set of tools for professional Wi-Fi network analysis on Windows.
           </p>
         </div>
       </div>
@@ -671,15 +674,14 @@
             <div class="feature-icon">
               <i class="fas fa-wifi"></i>
             </div>
-            <h3 class="feature-title">Detecção Completa</h3>
+            <h3 class="feature-title">Complete Detection</h3>
             <p class="feature-text">
-              Liste todas as redes Wi-Fi armazenadas no sistema com detalhes como SSID, tipo de autenticação e força do
-              signal.
+              List all Wi-Fi networks stored on your system with details like SSID, authentication type, and signal strength.
             </p>
             <ul class="feature-list">
-              <li>Visualização organizada por data de conexão</li>
-              <li>Filtros por tipo de segurança</li>
-              <li>Indicador de qualidade de conexão</li>
+              <li>Organized by connection date</li>
+              <li>Security type filters</li>
+              <li>Connection quality indicator</li>
             </ul>
           </div>
         </div>
@@ -688,14 +690,14 @@
             <div class="feature-icon">
               <i class="fas fa-key"></i>
             </div>
-            <h3 class="feature-title">Gerenciamento de Credenciais</h3>
+            <h3 class="feature-title">Credential Management</h3>
             <p class="feature-text">
-              Recupere e gerencie informações de segurança das redes, incluindo senhas em formatos ASCII e hexadecimal.
+              Recover and manage network security information, including passwords in ASCII and hexadecimal formats.
             </p>
             <ul class="feature-list">
-              <li>Visualização segura de senhas</li>
-              <li>Opção de copiar para área de transferência</li>
-              <li>Exportação criptografada</li>
+              <li>Secure password visualization</li>
+              <li>Copy to clipboard option</li>
+              <li>Encrypted export</li>
             </ul>
           </div>
         </div>
@@ -704,14 +706,14 @@
             <div class="feature-icon">
               <i class="fas fa-shield-alt"></i>
             </div>
-            <h3 class="feature-title">Análise de Segurança</h3>
+            <h3 class="feature-title">Security Analysis</h3>
             <p class="feature-text">
-              Identifique redes vulneráveis e configure alertas para conexões inseguras ou com protocolos obsoletos.
+              Identify vulnerable networks and configure alerts for insecure connections or outdated protocols.
             </p>
             <ul class="feature-list">
-              <li>Detecção de WEP/WPA vulneráveis</li>
-              <li>Alertas para redes abertas</li>
-              <li>Relatório de segurança detalhado</li>
+              <li>WEP/WPA vulnerability detection</li>
+              <li>Open network alerts</li>
+              <li>Detailed security report</li>
             </ul>
           </div>
         </div>
@@ -724,9 +726,9 @@
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-8 text-center">
-          <h2 class="section-title mb-5" style="color: white;">Como Funciona</h2>
+          <h2 class="section-title mb-5" style="color: white;">How It Works</h2>
           <p class="lead text-muted mb-5">
-            DarkFeather utiliza APIs nativas do Windows para acessar informações de rede de forma segura e eficiente.
+            DarkFeather uses native Windows APIs to access network information securely and efficiently.
           </p>
         </div>
       </div>
@@ -734,41 +736,71 @@
         <div class="col-lg-6 mb-4">
           <div class="step-card">
             <div class="step-number">1</div>
-            <h3 class="step-title">Scan Automático</h3>
+            <h3 class="step-title">Automatic Scan</h3>
             <p class="step-text">
-              Ao iniciar, o DarkFeather automaticamente varre o sistema em busca de todos os perfis Wi-Fi armazenados,
-              incluindo redes esquecidas ou raramente usadas.
+              When launched, DarkFeather automatically scans the system for all stored Wi-Fi profiles, including forgotten or rarely used networks.
             </p>
           </div>
         </div>
         <div class="col-lg-6 mb-4">
           <div class="step-card">
             <div class="step-number">2</div>
-            <h3 class="step-title">Processamento Seguro</h3>
+            <h3 class="step-title">Secure Processing</h3>
             <p class="step-text">
-              As credenciais são descriptografadas usando as APIs oficiais do Windows, garantindo que o processo seja
-              realizado de forma segura e autorizada.
+              Credentials are decrypted using official Windows APIs, ensuring the process is performed securely and with proper authorization.
             </p>
           </div>
         </div>
         <div class="col-lg-6 mb-4">
           <div class="step-card">
             <div class="step-number">3</div>
-            <h3 class="step-title">Organização Inteligente</h3>
+            <h3 class="step-title">Smart Organization</h3>
             <p class="step-text">
-              Os resultados são organizados por data de uso, tipo de segurança e qualidade de sinal, facilitando a
-              análise.
+              Results are organized by last use date, security type, and signal quality for easy analysis.
             </p>
           </div>
         </div>
         <div class="col-lg-6 mb-4">
           <div class="step-card">
             <div class="step-number">4</div>
-            <h3 class="step-title">Exportação Flexível</h3>
+            <h3 class="step-title">Flexible Export</h3>
             <p class="step-text">
-              Os dados podem ser exportados em vários formatos (TXT, CSV, JSON) ou copiados diretamente para a área de
-              transferência.
+              Data can be exported in various formats (TXT, CSV, JSON) or copied directly to the clipboard.
             </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Section -->
+  <section id="screenshots" class="py-5 bg-light">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+          <h2 class="section-title mb-5">Screenshots</h2>
+          <p class="lead text-muted mb-5">
+            Check out the modern, intuitive interface of DarkFeather below.
+          </p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <div class="screenshot-card">
+            <div class="screenshot-placeholder" style="background: #e9ecef; text-align: center; padding: 80px 20px;">
+              <i class="fas fa-wifi" style="font-size: 4rem; color: #0d6efd;"></i>
+              <p class="mt-3 text-muted">Main Interface</p>
+            </div>
+            <div class="screenshot-caption">Network List and Details Panel</div>
+          </div>
+        </div>
+        <div class="col-md-6 mb-4">
+          <div class="screenshot-card">
+            <div class="screenshot-placeholder" style="background: #e9ecef; text-align: center; padding: 80px 20px;">
+              <i class="fas fa-chart-bar" style="font-size: 4rem; color: #0d6efd;"></i>
+              <p class="mt-3 text-muted">Security Analysis</p>
+            </div>
+            <div class="screenshot-caption">Vulnerability Detection and Reports</div>
           </div>
         </div>
       </div>
@@ -780,16 +812,16 @@
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-8 text-center">
-          <h2 class="section-title mb-4" style="color: white;">Pronto para dominar suas conexões Wi-Fi?</h2>
+          <h2 class="section-title mb-4" style="color: white;">Ready to master your Wi-Fi connections?</h2>
           <p class="lead mb-5">
-            Baixe agora o DarkFeather e tenha controle total sobre todas as redes armazenadas no seu Windows.
+            Download DarkFeather now and take full control of all networks stored on your Windows.
           </p>
           <a href="dist/darkfeather.exe" class="btn btn-lg mr-3"
             style="background: #fff; color: #111; border: 1px solid #fff;">
-            <i class="fas fa-download mr-2"></i>Download Gratuito
+            <i class="fas fa-download mr-2"></i>Free Download
           </a>
           <a href="#features" class="btn btn-outline-light btn-lg">
-            <i class="fas fa-info-circle mr-2"></i>Saiba Mais
+            <i class="fas fa-info-circle mr-2"></i>Learn More
           </a>
         </div>
       </div>
@@ -801,9 +833,9 @@
     <div class="container">
       <div class="row">
         <div class="col-lg-4 mb-4">
-          <img src="./src/assets/img/profile_icons/darkfeather.png" alt="DarkFeather" class="footer-logo mb-3">
+          <img src="./src/assets/img/profile_icons/darkfeather.png" alt="DarkFeather" class="footer-logo mb-3" style="height: 50px;">
           <p>
-            DarkFeather é uma ferramenta profissional para análise e gerenciamento de redes Wi-Fi no ambiente Windows.
+            DarkFeather is a professional tool for Wi-Fi network analysis and management on Windows.
           </p>
           <div class="social-icons mt-4">
             <a href="https://github.com/EduardoDosSantosFerreira" class="social-icon"><i class="fab fa-github"></i></a>
@@ -816,8 +848,8 @@
         <div class="col-lg-2 col-md-6 mb-4">
           <h5 class="footer-heading">Links</h5>
           <ul class="footer-links">
-            <li><a href="#features">Recursos</a></li>
-            <li><a href="#how-it-works">Como Funciona</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
             <li><a href="#screenshots">Screenshots</a></li>
             <li><a href="#download">Download</a></li>
           </ul>
@@ -825,13 +857,13 @@
         <div class="col-lg-3 col-md-6 mb-4">
           <h5 class="footer-heading">Legal</h5>
           <ul class="footer-links">
-            <li><a href="#">Termos de Uso</a></li>
-            <li><a href="#">Política de Privacidade</a></li>
-            <li><a href="#">Licença</a></li>
+            <li><a href="#">Terms of Use</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">License</a></li>
           </ul>
         </div>
         <div class="col-lg-3 mb-4">
-          <h5 class="footer-heading">Contato</h5>
+          <h5 class="footer-heading">Contact</h5>
           <ul class="footer-links">
             <li style="display: flex; align-items: center;">
               <i class="fas fa-envelope mr-2"></i>
@@ -845,8 +877,7 @@
       <hr class="bg-secondary">
       <div class="row">
         <div class="col-md-12 text-center">
-          <p class="mb-0">&copy; 2025 Eduardo S Ferreira. Todos os direitos reservados. | DarkFeather - Wireless
-            Connection PRO</p>
+          <p class="mb-0">&copy; 2025 Eduardo S Ferreira. All rights reserved. | DarkFeather - Wireless Connection PRO</p>
         </div>
       </div>
     </div>
@@ -1012,11 +1043,6 @@
       border-top: 1px solid rgba(0, 0, 0, 0.05);
     }
 
-    /* CTA Section */
-    .section-title.text-white::after {
-      background-color: #fff;
-    }
-
     /* Footer */
     .footer-logo {
       height: 50px;
@@ -1104,3 +1130,9 @@
       }
     }
   </style>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

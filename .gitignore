@@ -4,6 +4,26 @@
 
 # Pasta de auditoria (NUNCA subir chaves ou relatórios)
 keys/
+audit/
+chaves/
+certificados/
+
+# Arquivos de chave privada
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+*.cer
+*.der
+*.p8
+*.csr
+
+# Secrets e tokens
+secrets/
+tokens/
+credentials/
+.env.secret
 
 
 # =========================
@@ -21,10 +41,20 @@ __pycache__/
 venv/
 .env/
 .venv/
+virtualenv/
+env/
 
 # Arquivos de ambiente
 .env
 .env.local
+.env.*.local
+
+# Arquivos de distribuição
+*.egg-info/
+*.egg
+dist/
+build/
+MANIFEST
 
 
 # =========================
@@ -35,6 +65,14 @@ build/
 *.spec
 *.egg-info/
 .eggs/
+*.whl
+*.tar.gz
+
+# PyInstaller
+*.manifest
+*.spec
+*.exe
+dist/
 
 
 # =========================
@@ -45,25 +83,77 @@ build/
 .cache/
 .coverage
 htmlcov/
+.tox/
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+
+# Logs de teste
+test-results/
+test-reports/
 
 
 # =========================
 # 🖥 IDE / EDITOR
 # =========================
 
+# VS Code
 .vscode/
+*.code-workspace
+
+# PyCharm / IntelliJ
 .idea/
+*.iml
+
+# Sublime Text
 *.sublime-workspace
 *.sublime-project
 
+# Vim / Neovim
+*.swp
+*.swo
+*~
+*.un~
+
+# Eclipse / NetBeans
+.classpath
+.project
+.settings/
+.nbproject/
+
 
 # =========================
-# 🖼 ARQUIVOS TEMPORÁRIOS
+# 📦 DEPENDÊNCIAS
 # =========================
 
-*.log
-*.tmp
-*.bak
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bower_components/
+
+# Pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+
+# =========================
+# 🖼 MÍDIAS / ARQUIVOS GRANDES
+# =========================
+
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.iso
+*.7z
+*.rar
+
+# Imagens grandes (opcional - remova se precisar versionar imagens)
+# *.jpg
+# *.jpeg
+# *.png
+# *.gif
 
 
 # =========================
@@ -71,7 +161,27 @@ htmlcov/
 # =========================
 
 Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
 Desktop.ini
+$RECYCLE.BIN/
+
+# Windows Installer
+*.msi
+*.msp
+
+
+# =========================
+# 🍎 MACOS
+# =========================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
 
 
 # =========================
@@ -79,3 +189,70 @@ Desktop.ini
 # =========================
 
 *~
+.directory
+.document
+.Trash-*
+
+
+# =========================
+# 📝 DOCUMENTAÇÃO / BACKUP
+# =========================
+
+*.bak
+*.backup
+*.old
+*.orig
+*.temp
+*.tmp
+*.swp
+*.swo
+
+# Documentação gerada
+docs/_build/
+docs/api/
+site/
+
+
+# =========================
+# 🔧 FERRAMENTAS ESPECÍFICAS
+# =========================
+
+# Poetry
+poetry.lock
+
+# Conda
+.conda-environment.yml
+
+# Docker
+*.dockerignore
+docker-compose.override.yml
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# Pre-commit
+.pre-commit-config.yaml.local
+
+
+# =========================
+# 📁 DIRETÓRIOS DE LOG
+# =========================
+
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+# =========================
+# 🔄 VERSÃO E CONTROLE
+# =========================
+
+.mergetool_backup/
+*.orig
+*.mine
+*.BASE
+*.LOCAL
+*.REMOTE
